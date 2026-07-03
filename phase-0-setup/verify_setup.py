@@ -79,8 +79,13 @@ def check_python() -> dict:
     major, minor, micro = env_checks.python_version()
     return {
         "version": f"{major}.{minor}.{micro}",
-        "ok": env_checks.python_is_required(),
+        "ok": env_checks.python_is_supported(),
     }
+
+
+def check_environment() -> dict:
+    """Record where this ran. Cloud Shell is the mandated dev environment; local is allowed."""
+    return {"cloud_shell": env_checks.in_cloud_shell()}
 
 
 def check_gcloud() -> dict:
@@ -115,6 +120,7 @@ def check_git() -> dict:
 def build_report() -> dict:
     return {
         "phase": "0",
+        "environment": check_environment(),
         "python": check_python(),
         "gcloud": check_gcloud(),
         "docker": check_docker(),
@@ -130,9 +136,12 @@ def _print_summary(report: dict) -> None:
     gc = report["gcloud"]
     dk = report["docker"]
     gt = report["git"]
+    env = report["environment"]
     print("Phase 0 environment check")
     print("-" * 40)
-    print(f"[{mark(py['ok'])}] Python {py['version']} (need 3.11)")
+    where = "Cloud Shell" if env["cloud_shell"] else "local machine"
+    print(f"[OK  ] Running on: {where}")
+    print(f"[{mark(py['ok'])}] Python {py['version']} (need 3.11 or 3.12)")
     print(f"[{mark(bool(gc['account']))}] gcloud account: {gc['account'] or '(unset)'}")
     print(f"[{mark(bool(gc['project']))}] gcloud project: {gc['project'] or '(unset)'}")
     print(f"[{mark(dk['present'])}] {dk['version'] or 'docker not found'}")

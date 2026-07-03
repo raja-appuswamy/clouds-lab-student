@@ -18,6 +18,33 @@ You will create two free accounts:
 1. **Google Cloud Platform (GCP)** — the cloud you deploy to.
 2. **GitHub** — where your code lives and where autograding runs.
 
+## Development environment — **Google Cloud Shell (mandated)**
+
+You do **all development for this lab in [Google Cloud Shell](https://cloud.google.com/shell)** —
+a free, browser-based Linux environment attached to your GCP account. Nothing to install
+locally. Open it from the Cloud Console toolbar (the `>_` icon) or at
+<https://shell.cloud.google.com>.
+
+Why Cloud Shell is the standard for this course:
+- **`gcloud`, `docker`, `git`, and Python are all pre-installed** and `gcloud` is already
+  authenticated as your GCP account — Phase 0 setup becomes almost entirely "verify", not
+  "install".
+- A built-in **VS Code-style IDE** (Cloud Shell Editor — click **Open Editor**) with a file
+  explorer, integrated terminal, a Git panel, and **Web Preview** for viewing your app on a
+  port (handy from Phase 1 on).
+- A **persistent 5 GB `$HOME`** that survives between sessions.
+
+Cloud Shell limits to respect: ~50 hours/week, ~20 min idle disconnect, and anything
+**outside `$HOME`** is reset between sessions — so keep your work in `$HOME` and, as always,
+**commit to git**. Cloud Shell is for development and deployment; the heavy model training
+(Phase 2) and Spark (Phase 3) run in **Google Colab**, not here.
+
+> **Optional — local IDE instead.** If you prefer your own machine, you may develop locally
+> in VS Code (or any IDE) instead of Cloud Shell. You are then responsible for installing
+> `gcloud`, Docker, Python 3.11, and git yourself, and for matching versions. Everything in
+> this lab works either way; the optional local steps are called out in
+> [TASKS.md](TASKS.md). **If in doubt, use Cloud Shell** — it is the supported path.
+
 > ⚠️ **Free-tier safety — read this once, remember it all semester.** The entire lab is
 > designed to stay inside the GCP *Always Free* tier. The traps that cost real money:
 > - Always-Free quotas are **per billing account**, not per project — do **not** share a
@@ -38,15 +65,22 @@ Cloud service models (the Lecture 1 backbone — know where each tool you instal
 - GCP **Always Free** tier (skim the table; note the quotas for Compute Engine, Cloud
   Run, Cloud Storage, Firestore, BigQuery): <https://cloud.google.com/free/docs/free-cloud-features#free-tier>
 
-Tools you will install:
-- **gcloud CLI** (the Google Cloud SDK) — install & init:
-  <https://cloud.google.com/sdk/docs/install> then <https://cloud.google.com/sdk/docs/initializing>
-- **Python 3.11** and virtual environments:
-  <https://www.python.org/downloads/release/python-3119/>,
-  <https://docs.python.org/3/library/venv.html>
-- **Docker Desktop** (used from Phase 1): <https://docs.docker.com/get-docker/>
+Environment & tools:
+- **Google Cloud Shell** (mandated) — overview & how to open:
+  <https://cloud.google.com/shell/docs/using-cloud-shell>; the built-in IDE:
+  <https://cloud.google.com/shell/docs/editor-overview>
 - **git & GitHub basics** (clone, commit, push; making a repo public):
   <https://docs.github.com/en/get-started/quickstart/hello-world>
+- **Python virtual environments** (you use a venv in either environment):
+  <https://docs.python.org/3/library/venv.html>
+
+Only if you take the **optional local path** (not needed in Cloud Shell, where these are
+pre-installed):
+- **gcloud CLI** install & init:
+  <https://cloud.google.com/sdk/docs/install> then <https://cloud.google.com/sdk/docs/initializing>
+- **Python 3.11** (reference version; 3.12 also accepted):
+  <https://www.python.org/downloads/release/python-3119/>
+- **Docker Desktop** (used from Phase 1): <https://docs.docker.com/get-docker/>
 
 ---
 

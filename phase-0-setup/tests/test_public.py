@@ -6,7 +6,7 @@ Two kinds of test here:
     ``parse_repo_slug``). These use canned inputs and pass/fail purely on YOUR code —
     no cloud, no network. They fail while the TODOs are unfilled and pass once done.
   * Environment tests that read ``submission/phase0_report.json`` to confirm your
-    machine is actually set up (Python 3.11, gcloud configured, Docker, GitHub remote).
+    machine is actually set up (Python 3.11/3.12, gcloud configured, Docker, GitHub remote).
 
 Total: 60 points (the hidden instructor tests add the rest — see the rubric in TASKS.md).
 """
@@ -64,9 +64,9 @@ def test_parse_repo_slug_rejects_non_github():
 # Environment tests (read the submission report)
 # --------------------------------------------------------------------------- #
 @points(5)
-def test_python_is_311(report):
+def test_python_is_supported(report):
     assert report["python"]["ok"], (
-        f"expected Python 3.11, report says {report['python']['version']}"
+        f"expected Python 3.11 or 3.12, report says {report['python']['version']}"
     )
 
 

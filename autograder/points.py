@@ -5,7 +5,7 @@ Usage in a test module::
     from autograder.points import points, visibility
 
     @points(5)
-    def test_python_is_311(report):
+    def test_python_is_supported(report):
         assert report["python"]["ok"]
 
     @points(5)

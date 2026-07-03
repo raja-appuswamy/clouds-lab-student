@@ -7,13 +7,17 @@ system calls (running a subprocess, reading the git remote) so that each phase's
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
 from typing import Tuple
 
-# Python version the lab is standardised on. Students must use this exact minor.
-REQUIRED_PYTHON = (3, 11)
+# Reference Python for the lab. The mandated environment (Google Cloud Shell), Colab, and
+# the Cloud Run base image all provide 3.11, and the grading CI pins 3.11. Local installs
+# may also use 3.12. Kept narrow on purpose for reproducibility across those environments.
+REFERENCE_PYTHON = (3, 11)
+SUPPORTED_PYTHON = {(3, 11), (3, 12)}
 
 
 def run(cmd: list[str], timeout: int = 30) -> Tuple[int, str, str]:
@@ -41,9 +45,17 @@ def python_version() -> Tuple[int, int, int]:
     return sys.version_info[:3]
 
 
-def python_is_required() -> bool:
-    """True iff the running interpreter matches :data:`REQUIRED_PYTHON` (major.minor)."""
-    return sys.version_info[:2] == REQUIRED_PYTHON
+def python_is_supported() -> bool:
+    """True iff the running interpreter's major.minor is in :data:`SUPPORTED_PYTHON`."""
+    return sys.version_info[:2] in SUPPORTED_PYTHON
+
+
+def in_cloud_shell() -> bool:
+    """True iff running inside Google Cloud Shell (which sets CLOUD_SHELL=true)."""
+    return (
+        os.environ.get("CLOUD_SHELL") == "true"
+        or os.environ.get("GOOGLE_CLOUD_SHELL") == "true"
+    )
 
 
 def has_command(name: str) -> bool:
