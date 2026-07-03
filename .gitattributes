@@ -1,0 +1,10 @@
+# Normalize line endings: store everything as LF in the repo so shell scripts in
+# GitHub Actions (which run on Linux) don't choke on CRLF. Windows checkouts still
+# work; only the stored blobs are LF.
+* text=auto eol=lf
+
+# Binary assets must never be normalized.
+*.png binary
+*.jpg binary
+*.safetensors binary
+*.parquet binary
