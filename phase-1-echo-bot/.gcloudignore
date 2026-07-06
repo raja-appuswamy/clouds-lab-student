@@ -1,0 +1,12 @@
+# Files NOT uploaded on `gcloud functions deploy`. Keep only what the function needs
+# (app.py, main.py, requirements.txt).
+tests/
+ci/
+Dockerfile
+.dockerignore
+measure.py
+__pycache__/
+.venv/
+submission/
+README.md
+TASKS.md

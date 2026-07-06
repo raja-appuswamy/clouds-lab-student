@@ -82,10 +82,8 @@ and the free-tier safety rules.
 
 ## Deliverables
 
-1. Your **public GitHub repo URL**.
-2. A committed `submission/phase0_report.json` (produced by `verify_setup.py`).
-3. A **green** `autograde-phase-0` CI run on your latest push.
-4. A screenshot of `gcloud config list` (place it at `submission/gcloud_config.png`).
+1. Your **public GitHub repo URL** with the committed `submission/phase0_report.json` (produced by `verify_setup.py`).
+2. A **green** `autograde-phase-0` CI run on your latest push.
 
 ## Grading rubric (100 pts)
 
