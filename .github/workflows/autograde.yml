@@ -29,9 +29,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Runs the whole tests/ dir. In your repo that's the public tests only
+      # (test_units.py + test_report.py); there is no hidden test here to run.
       - name: Run public autograder tests
         run: >
-          python -m pytest phase-0-setup/tests/test_public.py
+          python -m pytest phase-0-setup/tests
           -p autograder.points
           --results-json results.json
           -q

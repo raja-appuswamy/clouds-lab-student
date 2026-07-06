@@ -15,7 +15,7 @@ Two small functions are left for YOU to implement (search for ``TODO``):
   * ``parse_repo_slug``     — turn a git remote URL into ``owner/repo``.
 
 Everything else is provided. These are pure functions (input string in, value out),
-so you can test them without touching the cloud — see ``tests/test_public.py``.
+so you can test them without touching the cloud — see ``tests/test_units.py``.
 """
 
 from __future__ import annotations

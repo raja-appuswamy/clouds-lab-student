@@ -62,19 +62,23 @@ and the free-tier safety rules.
   Open [verify_setup.py](verify_setup.py) and implement:
   - `parse_gcloud_config(raw)` — extract account + project from gcloud's JSON output.
   - `parse_repo_slug(remote_url)` — turn a git remote URL into `owner/repo`.
-  Run the public unit tests as you go (they need no cloud access):
+  Run the **unit tests** as you go — they are offline and need no report:
   ```bash
-  python -m pytest phase-0-setup/tests/test_public.py -p autograder.points -q
+  python -m pytest phase-0-setup/tests/test_units.py -p autograder.points -q
   ```
 
-- [ ] **8. Run the self-check, commit, and push.**
-  From the **repo root**:
+- [ ] **8. Run the self-check, then the report tests.**
+  From the **repo root**, generate the report first, *then* run the report tests (they read
+  the report — running them before this step fails on purpose):
   ```bash
-  python phase-0-setup/verify_setup.py
+  python phase-0-setup/verify_setup.py                       # writes submission/phase0_report.json
+  python -m pytest phase-0-setup/tests -p autograder.points -q   # full public suite
   ```
-  This writes `submission/phase0_report.json` (it also records whether you ran in Cloud
-  Shell). Commit it **and** your completed `verify_setup.py`, then push. Open the **Actions**
-  tab and confirm the `autograde-phase-0` workflow is **green**.
+  The report also records whether you ran in Cloud Shell.
+
+- [ ] **9. Commit and push.**
+  Commit `submission/phase0_report.json` **and** your completed `verify_setup.py`, then push.
+  Open the **Actions** tab and confirm the `autograde-phase-0` workflow is **green**.
 
 ## Deliverables
 
@@ -103,5 +107,6 @@ Autograded — the point values match the test suite exactly.
 | **Total** | **100** | |
 
 Public checks (60 pts) you can verify yourself before submitting; hidden checks (40 pts)
-are run by the instructor. Run `python -m pytest phase-0-setup/tests/test_public.py -p autograder.points`
-any time to see your current public score.
+are run by the instructor. While coding, run the offline unit tests
+(`phase-0-setup/tests/test_units.py`); after `verify_setup.py`, run the full public suite
+(`phase-0-setup/tests`) to see your current public score.
