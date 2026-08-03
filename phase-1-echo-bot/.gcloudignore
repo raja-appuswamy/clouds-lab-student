@@ -1,9 +1,11 @@
-# Files NOT uploaded on `gcloud functions deploy`. Keep only what the function needs
-# (app.py, main.py, requirements.txt).
+# Files NOT uploaded by gcloud. This file is shared by BOTH:
+#   * `gcloud builds submit` (Task 3, image build) — needs the Dockerfile, so do NOT
+#     exclude Dockerfile/.dockerignore here.
+#   * `gcloud functions deploy` (Task 6) — gen2 + --runtime uses buildpacks, so the
+#     Dockerfile is simply ignored there; leaving it in the source is harmless.
+# Keeping this list to test/docs/scratch files makes both commands' contexts lean.
 tests/
 ci/
-Dockerfile
-.dockerignore
 measure.py
 __pycache__/
 .venv/
