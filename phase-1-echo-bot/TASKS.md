@@ -95,9 +95,6 @@ gcloud compute instances describe echo-vm --zone=$ZONE \
     --format='value(networkInterfaces[0].accessConfigs[0].natIP)'
 ```
 
-Time the **cold start** the plan asks about: boot + image pull + container start (from
-`create` to first successful `/healthz`).
-
 ---
 
 ## Task 5 — Container PaaS path: deploy the same image to Cloud Run
@@ -105,9 +102,9 @@ Time the **cold start** the plan asks about: boot + image pull + container start
 ```bash
 gcloud run deploy echo-bot --image=$IMAGE --region=$REGION \
     --allow-unauthenticated --min-instances=0 --max-instances=3 --port=8080
+# get its URL
+gcloud run services describe echo-bot --region=$REGION --format='value(status.url)'
 ```
-
-Note the printed **Service URL** (`https://echo-bot-...run.app`).
 
 ---
 
