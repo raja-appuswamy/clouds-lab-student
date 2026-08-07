@@ -15,14 +15,20 @@ runtime — *not* Cloud Shell (there is no free GPU/TPU on GCP; all training is 
 
 ## What you build
 
-A **byte-level GPT** (~5M params: 6 layers, 8 heads, `n_embd=256`) in PyTorch and train it
-on a small text corpus (TinyShakespeare). You implement:
+A **byte-level GPT** (~5M params: 6 layers, 8 heads, `n_embd=256`) which you train on a
+small text corpus (TinyShakespeare), then benchmark across CPU / threads / GPU / TPU.
 
-- `attention_numpy.py` — scaled dot-product attention **twice**: naive Python loops vs
-  vectorized NumPy. This is the SIMD lesson; you time both and see the speedup.
-- `model.py` — the `scaled_dot_product_attention` at the heart of the transformer.
+The model code comes **already working**: `attention_numpy.py` (naive vs vectorized
+attention — the SIMD lesson) and `model.py` (`scaled_dot_product_attention`) ship as
+complete solutions, so the phase runs out of the box.
 
-Then a provided **Colab notebook** drives five runs — CPU-naive, CPU-vectorized, CPU-thread
+**Implementing them yourself is optional** — recommended if you want the ML practice.
+Skeleton versions with TODOs are in `templates/`; to try it, copy one over the working file
+and fill it in (e.g. `cp templates/attention_numpy.py attention_numpy.py`), then re-run the
+unit tests.
+
+The **mandatory** work starts at the unit tests and everything after: run the tests, then
+the provided **Colab notebook** drives five runs — CPU-naive, CPU-vectorized, CPU-thread
 sweep, GPU, TPU — plots the results, trains the model, uploads the weights to **Cloud
 Storage**, and writes your report.
 
@@ -53,7 +59,8 @@ host↔device transfer overhead for small batches, when the GPU/TPU is starved.)
 
 ## How it's graded (torch-free, fast)
 
-- **Offline unit tests** grade your NumPy attention (naive == vectorized == reference).
+- **Offline unit tests** check the model code works — the provided solution passes, as does
+  your own implementation if you did the optional part.
 - **Model check**: the autograder range-reads just your uploaded safetensors **header**
   from your **public GCS URL** and verifies the architecture + ~5M param count — no full
   download, no torch.

@@ -31,11 +31,9 @@ def scaled_dot_product_attention(q, k, v, mask):
             att = softmax( (q @ kᵀ) / sqrt(head_dim)  with masked positions set to -inf )
             out = att @ v
     """
-    head_dim = q.size(-1)
-    att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
-    att = att.masked_fill(~mask, float("-inf"))
-    att = F.softmax(att, dim=-1)
-    return att @ v
+    # TODO: scores = q @ kᵀ / sqrt(head_dim); mask out where ~mask with -inf;
+    #       softmax over the last dim; return att @ v.
+    raise NotImplementedError("Phase 2: implement scaled_dot_product_attention()")
 
 
 class CausalSelfAttention(nn.Module):
