@@ -102,20 +102,19 @@ python -m pytest phase-2-tiny-gpt/tests -p autograder.points -q   # full public 
 
 ## Grading rubric (100 pts)
 
+Only the **mandatory** work is graded — the provided model code is not.
+
 | Check | Points | Where |
 |---|---:|---|
-| `attention_naive` matches reference | 10 | public unit test |
-| `attention_vectorized` matches reference | 10 | public unit test |
-| naive and vectorized agree | 10 | public unit test |
-| output shape / convexity | 5 | public unit test |
-| uploaded model is a ~5M-param model | 10 | public (GCS header) |
-| architecture matches spec (embedding, layers, head) | 15 | public (GCS header) |
-| all measurements present (attn, threads, cpu/gpu) | 10 | public (report) |
-| parallelism helped (vectorized<naive, GPU<CPU) | 10 | public (report) |
-| training + sample + model URL recorded | 5 | public (report) |
-| model actually trained (final loss < 3.0) | 8 | **hidden** |
-| training metadata sane (params, steps, sample, sweep) | 7 | **hidden** |
+| model code works (attention) — *provided solution, optional to write* | 0 | ungraded smoke check |
+| uploaded model is a ~5M-param model | 15 | public (GCS header) |
+| architecture matches spec (embedding, layers, head) | 20 | public (GCS header) |
+| all measurements present (attn, threads, cpu/gpu) | 15 | public (report) |
+| parallelism helped (vectorized<naive, GPU<CPU) | 15 | public (report) |
+| training + sample + model URL recorded | 10 | public (report) |
+| model actually trained (final loss < 3.0) | 15 | **hidden** |
+| training metadata sane (params, steps, sample, sweep) | 10 | **hidden** |
 | **Total** | **100** | |
 
 The notebook and the 1-page reflection are assessed separately by the instructor. Public
-checks (85 pts) you can verify yourself once the notebook has produced the report + upload.
+checks (75 pts) you can verify yourself once the notebook has produced the report + upload.

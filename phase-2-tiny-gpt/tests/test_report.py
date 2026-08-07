@@ -1,6 +1,6 @@
 """Phase 2 report tests — check your measured parallelism results (public).
 
-Reads submission/phase2_report.json (written by the notebook). (25 points.)
+Reads submission/phase2_report.json (written by the notebook). (40 points.)
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ from __future__ import annotations
 from autograder.points import points
 
 
-@points(10)
+@points(15)
 def test_all_measurements_present(report):
     att = report.get("attention", {})
     assert att.get("naive_ms") and att.get("vectorized_ms"), "attention timings missing"
@@ -17,7 +17,7 @@ def test_all_measurements_present(report):
     assert dev.get("cpu_ms") and dev.get("gpu_ms"), "cpu/gpu training timings missing"
 
 
-@points(10)
+@points(15)
 def test_parallelism_helped(report):
     att = report["attention"]
     assert att["vectorized_ms"] < att["naive_ms"], "vectorized attention should beat the naive loop"
@@ -25,7 +25,7 @@ def test_parallelism_helped(report):
     assert dev["gpu_ms"] < dev["cpu_ms"], "GPU training should beat CPU (use a GPU runtime)"
 
 
-@points(5)
+@points(10)
 def test_training_and_model_recorded(report):
     tr = report.get("training", {})
     assert isinstance(tr.get("final_loss"), (int, float)), "no final_loss recorded"

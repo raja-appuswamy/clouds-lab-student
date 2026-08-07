@@ -4,7 +4,7 @@ Reads the ``model.gcs_url`` from your report and range-downloads just the **safe
 header** (a few KB), then checks the tensor shapes describe the right ~5M-param GPT. No
 full download, no torch — so it's fast even across a whole class.
 
-Requires your GCS object to be public and reachable — keep it up until graded. (25 points.)
+Requires your GCS object to be public and reachable — keep it up until graded. (35 points.)
 """
 
 from __future__ import annotations
@@ -56,13 +56,13 @@ def header(report) -> dict:
     return h
 
 
-@points(10)
+@points(15)
 def test_param_count_is_a_tiny_gpt(header):
     params = sum(math.prod(meta["shape"]) for meta in header.values())
     assert 3_000_000 <= params <= 7_000_000, f"expected ~5M params, got {params:,}"
 
 
-@points(15)
+@points(20)
 def test_architecture_matches_spec(header):
     # Token embedding of the right size.
     tok = header.get("tok_emb.weight")
