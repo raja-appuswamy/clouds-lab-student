@@ -60,17 +60,22 @@ the random-init value (~5.55) and the generated sample looks text-like.
 
 ## Task 5 — Upload the weights to Cloud Storage (public)
 
-The notebook does this for you:
+The notebook does this. **Colab is not logged into gcloud**, so the upload cell first
+authenticates your session:
 
-```bash
-gcloud storage buckets create gs://$PROJECT-eurecomgpt --location=US   # first time
-gcloud storage cp model.safetensors gs://$PROJECT-eurecomgpt/model.safetensors
-gcloud storage objects update gs://$PROJECT-eurecomgpt/model.safetensors \
-    --add-acl-grant=entity=allUsers,role=READER                        # make it public
+```python
+from google.colab import auth
+auth.authenticate_user()      # opens a popup to log into your Google account
 ```
 
-Your model URL is `https://storage.googleapis.com/$PROJECT-eurecomgpt/model.safetensors`.
-Confirm it is public (open it in a browser — it should download).
+Then it uses the Cloud Storage **Python client** to create a bucket (`<PROJECT>-eurecomgpt`),
+grant public read (`allUsers` → `roles/storage.objectViewer`, which works with uniform
+bucket-level access), and upload `model.safetensors`. **Set `PROJECT` in that cell to your
+Phase-0 project id.**
+
+Your model URL is `https://storage.googleapis.com/<PROJECT>-eurecomgpt/model.safetensors`.
+Confirm it is public (open it in a browser — it should download). If bucket creation fails
+with an API error, enable Cloud Storage once: `gcloud services enable storage.googleapis.com`.
 
 ---
 
