@@ -1,7 +1,0 @@
-# Autograder/test deps for Phase 2 — kept light on purpose: NO torch. The grader
-# validates your uploaded weights by their tensor shapes (a range-read of the
-# safetensors header), not by running the model, so it only needs NumPy.
-numpy>=1.24
-#
-# In Colab you additionally need these (the notebook installs them; torch is preinstalled):
-#   torch  safetensors  matplotlib  google-cloud-storage

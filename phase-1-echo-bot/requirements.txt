@@ -1,5 +1,0 @@
-# Runtime deps for the echo bot. Used by the Dockerfile (VM + Cloud Run) AND by the
-# Cloud Function deploy (gcloud reads this file). Kept tiny to keep the image small.
-flask>=3.0,<4
-gunicorn>=21,<24
-functions-framework>=3.5,<4
