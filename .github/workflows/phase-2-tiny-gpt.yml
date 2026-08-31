@@ -1,0 +1,43 @@
+# Student-side autograding CI for Phase 2.
+#
+# Runs in YOUR repo on every push. It grades the NumPy vectorization code offline and
+# validates your uploaded model by range-reading its safetensors header from your public
+# GCS URL (recorded in submission/phase2_report.json). No torch, no GPU, no credentials —
+# training happens in Colab; here we only check the code + the artifact + the report.
+#
+# Keep your GCS model object public until you're graded, or the model checks go red.
+name: autograde-phase-2
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r phase-2-tiny-gpt/requirements.txt
+
+      - name: Run autograder tests (offline units + model header + report)
+        run: >
+          python -m pytest phase-2-tiny-gpt/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-2-score
+          path: results.json

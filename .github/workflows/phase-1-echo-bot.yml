@@ -1,0 +1,43 @@
+# Student-side autograding CI for Phase 1.
+#
+# Runs in YOUR repo on every push. It runs the offline unit tests (your app.py) AND
+# live-curls the three deployment URLs recorded in submission/phase1_report.json to
+# confirm each is up and echoing. No GCP credentials are needed — your endpoints are
+# public HTTP, so GitHub's runner can reach them directly.
+#
+# Keep your three deployments up until you are graded, or these live checks go red.
+name: autograde-phase-1
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r phase-1-echo-bot/requirements.txt
+
+      - name: Run autograder tests (offline units + live deployment checks)
+        run: >
+          python -m pytest phase-1-echo-bot/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-1-score
+          path: results.json

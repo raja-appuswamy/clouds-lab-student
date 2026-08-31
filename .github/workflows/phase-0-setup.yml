@@ -1,0 +1,46 @@
+# Student-side autograding CI for Phase 0.
+#
+# Runs in YOUR OWN GitHub repo on every push. It re-runs the public tests against
+# your committed submission/phase0_report.json and prints your self-check score.
+# The green/red badge on your repo is part of the deliverable.
+#
+# This is the same pattern later (cloud) phases use — they add a step that
+# authenticates to YOUR GCP project and tests YOUR live deployment, so the
+# instructor never needs access to your cloud account.
+name: autograde-phase-0
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Runs the whole tests/ dir. In your repo that's the public tests only
+      # (test_units.py + test_report.py); there is no hidden test here to run.
+      - name: Run public autograder tests
+        run: >
+          python -m pytest phase-0-setup/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-0-score
+          path: results.json

@@ -1,0 +1,7 @@
+# Autograder/test deps for Phase 3 — kept light: NO pyspark. The grader validates your
+# TF-IDF *output* (the Parquet you upload) rather than running Spark, so it only needs
+# pyarrow to read Parquet.
+pyarrow>=14
+#
+# In Colab you additionally need (the notebook installs these):
+#   pyspark  pyarrow  google-cloud-storage  google-cloud-bigquery
