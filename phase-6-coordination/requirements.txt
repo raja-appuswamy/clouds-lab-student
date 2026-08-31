@@ -1,0 +1,4 @@
+# Phase 6. The autograder tests are pure Python (the simulator) + your committed report, so
+# they need nothing extra. Only run_phase6.py (real GCP, in Cloud Shell) needs the clients:
+google-cloud-firestore>=2.13
+google-cloud-bigquery>=3.11

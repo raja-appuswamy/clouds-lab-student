@@ -1,0 +1,44 @@
+# Student-side autograding CI for Phase 6.
+#
+# The protocol logic (2PC + Raft) is graded offline via the simulator — pure Python, no
+# cloud. The report checks read your committed submission/phase6_report.json. No GCP deps.
+name: autograde-phase-6
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+# Cancel a superseded run when you push again — the latest push is what gets graded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run autograder tests (2PC + Raft simulator units + report)
+        run: >
+          python -m pytest phase-6-coordination/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-6-score
+          path: results.json
