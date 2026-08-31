@@ -1,0 +1,7 @@
+# Keep the Cloud Build upload lean. Do NOT exclude the Dockerfile (the image build needs it).
+tests/
+ci/
+ui/
+__pycache__/
+README.md
+TASKS.md

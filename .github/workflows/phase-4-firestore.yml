@@ -1,0 +1,44 @@
+# Student-side autograding CI for Phase 4.
+#
+# The tests run entirely against the in-memory fake Firestore (offline) plus your committed
+# submission/phase4_report.json — no GCP credentials, no google-cloud-firestore needed here.
+name: autograde-phase-4
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+# Cancel a superseded run when you push again — the latest push is what gets graded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run autograder tests (fake-Firestore units + report)
+        run: >
+          python -m pytest phase-4-firestore/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-4-score
+          path: results.json

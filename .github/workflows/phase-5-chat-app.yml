@@ -1,0 +1,45 @@
+# Student-side autograding CI for Phase 5.
+#
+# Grades the RAG helpers offline (rag.py is pure Python) and live-curls your public Cloud Run
+# chat endpoint (recorded in submission/phase5_report.json). No GCP credentials, no heavy deps
+# — the server's runtime deps only matter inside the container, not here.
+name: autograde-phase-5
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+# Cancel a superseded run when you push again — the latest push is what gets graded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run autograder tests (offline RAG units + live chat endpoint + report)
+        run: >
+          python -m pytest phase-5-chat-app/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-5-score
+          path: results.json

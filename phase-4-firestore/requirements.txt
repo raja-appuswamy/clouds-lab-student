@@ -1,0 +1,3 @@
+# Phase 4. The autograder tests run entirely against the in-memory fake_firestore, so they
+# need nothing extra. Only run_phase4.py (real Firestore, in Cloud Shell) needs the client:
+google-cloud-firestore>=2.13

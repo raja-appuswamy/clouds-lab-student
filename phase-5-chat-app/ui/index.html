@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EurecomGPT</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.3rem; }
+  .cfg { display: flex; gap: .5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .cfg input { flex: 1 1 12rem; padding: .4rem; }
+  #log { border: 1px solid #8884; border-radius: 8px; padding: 1rem; min-height: 12rem; }
+  .msg { margin: .5rem 0; padding: .5rem .75rem; border-radius: 8px; white-space: pre-wrap; }
+  .user { background: #3b82f622; }
+  .assistant { background: #10b98122; }
+  .meta { font-size: .75rem; opacity: .6; }
+  .row { display: flex; gap: .5rem; margin-top: 1rem; }
+  .row input { flex: 1; padding: .5rem; }
+  button { padding: .5rem 1rem; cursor: pointer; }
+</style>
+</head>
+<body>
+  <h1>EurecomGPT — RAG chat</h1>
+  <div class="cfg">
+    <input id="api" placeholder="Cloud Run URL, e.g. https://chat-xxx.run.app" />
+    <input id="session" placeholder="session id" value="web-1" />
+  </div>
+  <div id="log"></div>
+  <div class="row">
+    <input id="message" placeholder="Ask something…" autocomplete="off" />
+    <button id="send">Send</button>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Remember the API URL between visits.
+  try { $("api").value = localStorage.getItem("api") || ""; } catch (e) {}
+  $("api").addEventListener("change", () => {
+    try { localStorage.setItem("api", $("api").value.trim()); } catch (e) {}
+  });
+
+  function add(role, text, meta) {
+    const el = document.createElement("div");
+    el.className = "msg " + role;
+    el.textContent = text;
+    if (meta) {
+      const m = document.createElement("div");
+      m.className = "meta";
+      m.textContent = meta;
+      el.appendChild(m);
+    }
+    $("log").appendChild(el);
+    el.scrollIntoView();
+  }
+
+  async function send() {
+    const api = $("api").value.trim().replace(/\/$/, "");
+    const message = $("message").value.trim();
+    if (!api || !message) return;
+    add("user", message);
+    $("message").value = "";
+    try {
+      const res = await fetch(api + "/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: $("session").value || "web-1", message }),
+      });
+      const data = await res.json();
+      add("assistant", data.reply || "(no reply)",
+          "retrieved docs: " + JSON.stringify(data.retrieved || []));
+    } catch (err) {
+      add("assistant", "Error: " + err);
+    }
+  }
+
+  $("send").addEventListener("click", send);
+  $("message").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+</script>
+</body>
+</html>

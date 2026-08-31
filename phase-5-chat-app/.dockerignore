@@ -1,0 +1,7 @@
+tests/
+ci/
+ui/
+__pycache__/
+*.pyc
+README.md
+TASKS.md

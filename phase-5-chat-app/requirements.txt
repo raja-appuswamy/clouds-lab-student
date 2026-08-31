@@ -1,0 +1,10 @@
+# Runtime deps for the chat server (the container). The autograder TESTS need none of these
+# — they exercise rag.py (pure Python) and live-curl your deployed URL — so student CI only
+# installs pytest.
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2
+numpy>=1.24
+safetensors>=0.4
+google-cloud-bigquery>=3.11
+google-cloud-firestore>=2.13
