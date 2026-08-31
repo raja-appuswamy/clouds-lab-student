@@ -14,6 +14,11 @@ on:
     branches: ["**"]
   workflow_dispatch: {}
 
+# Cancel a superseded run when you push again — the latest push is what gets graded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   autograde:
     runs-on: ubuntu-latest
