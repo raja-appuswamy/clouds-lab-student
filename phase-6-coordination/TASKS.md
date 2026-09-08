@@ -3,6 +3,16 @@
 Read [README.md](README.md) first. You **implement** the protocols (offline tests), then
 **run** the demos in **Google Cloud Shell**.
 
+> **How these task sheets work.** Each cloud task states an *objective*, names the module and
+> lecture where you were taught the commands, and says what the autograder checks.
+> **The `gcloud` commands are not given** — you have already performed these operations in the
+> Google Cloud modules listed under each task. Code, tests and provided scripts are given in
+> full; only cloud operations are withheld. Nearly all of this phase is offline protocol code, so there is little to recall here.
+>
+> **When you are stuck**, in this order: revisit the module named under the task; then
+> `gcloud <group> --help`; then <https://cloud.google.com/sdk/gcloud/reference>. Worked
+> commands are released after the submission deadline.
+
 ---
 
 ## Task 1 — Implement the protocols and run the offline tests
@@ -11,6 +21,8 @@ Fill the TODOs:
 - [twopc.py](twopc.py) — `coordinator_decision`, `participant_outcome`.
 - [raft.py](raft.py) — `start_election`, `handle_request_vote`, `has_majority`,
   `handle_append_entries`.
+
+**Taught in.** Lecture 9 *Consistency & CAP* · Lecture 10 *Two-phase commit* · Lecture 11 *Paxos and Raft*
 
 The simulator drives them through the failure scenarios (pure Python — no cloud):
 
@@ -27,10 +39,19 @@ split-brain) are the whole point.
 
 ## Task 2 — Run the demos on real GCP
 
+**Objective.** The Firestore and BigQuery APIs enabled on your project, then the provided
+runner executed against them.
+
+**Taught in.** Fundamentals M2 *Resources and Access in the Cloud*
+
+**Verified by.** The report the run produces, checked by the report tests.
+
+Enable the two APIs yourself. The runner is provided — command given in full:
+
 ```bash
-gcloud services enable firestore.googleapis.com bigquery.googleapis.com
 python phase-6-coordination/run_phase6.py
 ```
+
 
 This runs 6A (lost update vs transaction on Firestore), 6B (2PC across Firestore + BigQuery,
 happy path + coordinator crash), and 6C (Raft election / re-election / partition with node
@@ -66,23 +87,16 @@ python -m pytest phase-6-coordination/tests -p autograder.points -q   # full pub
 3. `submission/phase6_correctness.md` — the before/after distributed-correctness report.
 4. A **green** `autograde-phase-6` CI run.
 
-## Grading rubric (100 pts)
+## How your work is checked
 
-| Check | Points | Where |
-|---|---:|---|
-| 2PC commits when all vote yes | 8 | public unit test |
-| 2PC aborts on any no | 8 | public unit test |
-| 2PC blocks on coordinator crash | 9 | public unit test |
-| Raft elects a single leader | 10 | public unit test |
-| Raft re-elects after the leader is lost | 8 | public unit test |
-| Raft partition prevents split brain | 10 | public unit test |
-| Raft replicates + commits on majority | 7 | public unit test |
-| transaction fixes the lost update (real Firestore) | 8 | public (report) |
-| 2PC happy path + blocking (real Firestore/BigQuery) | 9 | public (report) |
-| Raft partition elects no minority leader (real) | 8 | public (report) |
-| coordinator crash left the decision unknown | 8 | **hidden** |
-| Raft re-election + real project id | 7 | **hidden** |
-| **Total** | **100** | |
+Your grade comes from the autograder, plus any writeup listed under **Deliverables**, which
+the instructor assesses separately. Run the public suite yourself before you push (after running `run_phase6.py`):
 
-The `phase6_correctness.md` report is assessed separately by the instructor. Public checks
-(85 pts) you can verify after `run_phase6.py`; while coding, just use `tests/test_units.py`.
+```bash
+python -m pytest phase-6-coordination/tests -p autograder.points -q
+```
+
+While coding, `phase-6-coordination/tests/test_units.py` alone is faster — it needs no cloud resources.
+The instructor also runs checks that are not in your repo, so a green public run is
+necessary but not sufficient.
+

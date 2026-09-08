@@ -3,6 +3,16 @@
 Do everything in **Google Cloud Shell**. Read [README.md](README.md) first. All commands
 assume you are at the **repo root** unless noted.
 
+> **How these task sheets work.** Each task states an *objective*, names the module and
+> lecture where you were taught the commands, and says what the autograder checks.
+> **The commands are not given** — you have already performed these operations in the Google
+> Cloud modules listed under each task, and recalling them is the point of the exercise.
+>
+> **When you are stuck**, in this order: revisit the module named under the task; then
+> `gcloud <group> --help` (e.g. `gcloud compute instances --help`); then the CLI reference at
+> <https://cloud.google.com/sdk/gcloud/reference>. Worked commands are released after the
+> submission deadline.
+
 Set these once per shell session (reuse your Phase-0 project):
 
 ```bash
@@ -18,10 +28,13 @@ Work through the tasks below in order.
 
 ## Task 1 — Enable the APIs
 
-```bash
-gcloud services enable artifactregistry.googleapis.com run.googleapis.com \
-    cloudfunctions.googleapis.com cloudbuild.googleapis.com compute.googleapis.com
-```
+**Objective.** Artifact Registry, Cloud Run, Cloud Functions, Cloud Build and Compute Engine
+are all enabled on your project.
+
+**Taught in.** Fundamentals M2 *Resources and Access in the Cloud* · Lecture 1
+
+**Verified by.** Nothing directly — but every later task fails without this.
+
 
 ---
 
@@ -36,7 +49,7 @@ lines in the [Dockerfile](Dockerfile).
 > The routes in `app.py` are already written for you; you only implement the two small
 > pure functions they call.
 
-Then run the offline unit tests:
+This task is code, not cloud operations — the commands below are given in full.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -54,73 +67,88 @@ python phase-1-echo-bot/app.py     # then GET /echo?msg=hi
 
 ## Task 3 — Build the image and push it to Artifact Registry
 
-```bash
-gcloud artifacts repositories create eurecomgpt \
-    --repository-format=docker --location=$REGION       # first time only
-gcloud builds submit phase-1-echo-bot --tag $IMAGE       # builds your Dockerfile, pushes
-```
+**Objective.** A Docker repository named `eurecomgpt` in `$REGION`, containing your image
+built from this phase's `Dockerfile` and tagged `$IMAGE`.
 
-Check the image size (discuss it in your report): the Artifact Registry console shows it,
-or `gcloud artifacts docker images list $REGION-docker.pkg.dev/$PROJECT/eurecomgpt`.
+**Taught in.** Fundamentals M5 *Containers in the Cloud* · Lecture 2
 
----
+**Verified by.** Tasks 5–6 pull this image; the live-curl tests fail if it is missing.
 
-## Task 4 — IaaS path: run the container on an `e2-micro` VM
+Note the image size once it is pushed — you need it for the comparison report. The Artifact
+Registry console shows it, and so does the CLI.
 
-```bash
-gcloud compute instances create echo-vm \
-    --zone=$ZONE --machine-type=e2-micro \
-    --image-family=debian-12 --image-project=debian-cloud --tags=echo-http
-# open port 8080 to the internet for the echo-http tag
-gcloud compute firewall-rules create allow-echo-8080 \
-    --allow=tcp:8080 --target-tags=echo-http --source-ranges=0.0.0.0/0
-# let the VM's service account pull from Artifact Registry
-VM_SA=$(gcloud compute instances describe echo-vm --zone=$ZONE \
-    --format='value(serviceAccounts[0].email)')
-gcloud projects add-iam-policy-binding $PROJECT \
-    --member="serviceAccount:$VM_SA" --role="roles/artifactregistry.reader"
-# SSH in and run the container
-gcloud compute ssh echo-vm --zone=$ZONE
-#   --- on the VM: ---
-sudo apt-get update && sudo apt-get install -y docker.io
-sudo gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
-sudo docker run -d -p 8080:8080 <PASTE $IMAGE HERE>
-exit
-```
-
-Your VM URL is `http://<EXTERNAL_IP>:8080` — get the IP with:
-
-```bash
-gcloud compute instances describe echo-vm --zone=$ZONE \
-    --format='value(networkInterfaces[0].accessConfigs[0].natIP)'
-```
 
 ---
 
-## Task 5 — Container PaaS path: deploy the same image to Cloud Run
+## Task 4 — Build a network to put it on
 
-```bash
-gcloud run deploy echo-bot --image=$IMAGE --region=$REGION \
-    --allow-unauthenticated --min-instances=0 --max-instances=3 --port=8080
-# get its URL
-gcloud run services describe echo-bot --region=$REGION --format='value(status.url)'
-```
+**Objective.** A **custom-mode VPC** named `echo-net` with one subnet `echo-subnet` in
+`$REGION`, plus a firewall rule that allows inbound TCP 8080 from anywhere to instances
+carrying the network tag `echo-http`.
 
----
+Do **not** use the `default` network. Every other phase in this lab hides networking behind
+managed services; this is the one place you build it yourself.
 
-## Task 6 — Serverless path: deploy `main.py` as a Cloud Function (gen 2)
+**Taught in.** Foundation M2 *Virtual Networks*
 
-```bash
-gcloud functions deploy echo --gen2 --region=$REGION \
-    --runtime=python311 --source=phase-1-echo-bot \
-    --entry-point=echo --trigger-http --allow-unauthenticated
-# get its URL
-gcloud functions describe echo --gen2 --region=$REGION --format='value(serviceConfig.uri)'
-```
+**Verified by.** Not autograded yet — record the network and subnet names in your comparison
+report, and be ready to explain in the report why the firewall rule needs the tag.
+
 
 ---
 
-## Task 7 — Measure all three and write the report
+## Task 5 — IaaS path: run the container on a VM in your subnet
+
+**Objective.** An `e2-micro` VM named `echo-vm` in `echo-subnet`, tagged `echo-http`, running
+your container and answering `http://<EXTERNAL_IP>:8080/echo?msg=hi`.
+
+**Taught in.** Fundamentals M3 *Virtual Machines and Networks* · Foundation M3 *Virtual
+Machines* · Lecture 1
+
+**Verified by.** A live-curl test against the VM URL you record in `phase1_report.json`.
+
+You need to work out five things: create the instance on your own subnet with the right tag
+and a Debian image; give its service account permission to pull from Artifact Registry; SSH
+in; install and authenticate Docker on the VM; run your container detached on port 8080.
+Then find the VM's external IP.
+
+
+---
+
+## Task 6 — Container PaaS path: deploy the same image to Cloud Run
+
+**Objective.** A public Cloud Run service named `echo-bot` in `$REGION` running the *same*
+image, scaling to zero, capped at 3 instances, listening on port 8080.
+
+**Taught in.** Fundamentals M6 *Applications in the Cloud* · Lecture 2
+
+**Verified by.** A live-curl test against the `*.run.app` URL in your report.
+
+Scaling to zero matters: it is what makes the cold-start measurement in Task 8 meaningful,
+and what keeps this phase free.
+
+
+---
+
+## Task 7 — Serverless path: deploy `main.py` as a Cloud Function (gen 2)
+
+**Objective.** A public gen-2 Cloud Function named `echo` in `$REGION`, Python 3.11, built
+from this phase's source with `echo` as the entry point, HTTP-triggered.
+
+**Taught in.** Fundamentals M6 *Applications in the Cloud* · *Set Up an App Dev Environment*
+badge · Lecture 2
+
+**Verified by.** A live-curl test against the function URL in your report.
+
+Note that this path deploys **source**, not your image — that difference is worth a paragraph
+in the comparison report.
+
+
+---
+
+## Task 8 — Measure all three and write the report
+
+The measurement harness is provided — commands given in full.
 
 ```bash
 python phase-1-echo-bot/measure.py \
@@ -135,27 +163,31 @@ then re-run with `--cold-only` and note the difference.
 
 ---
 
-## Task 8 — Commit, push, confirm green CI
+## Task 9 — Commit, push, confirm green CI
 
 Commit your `app.py`, `Dockerfile`, and `submission/phase1_report.json`, then push. The
 **`autograde-phase-1`** workflow runs your unit tests and live-curls all three URLs.
 
 ---
 
-## Task 9 — Write the comparison report
+## Task 10 — Write the comparison report
 
 Produce the 2-page comparison described under **Deliverables** below.
 
 ---
 
-## Task 10 — Tear down (after you're graded)
+## Task 11 — Tear down (after you're graded)
 
-Protect your quota once your grade is in:
+Protect your quota once your grade is in. **Commands given in full — never guess at
+teardown.** Delete the instance before the network, or the network delete will fail.
 
 ```bash
 gcloud run services delete echo-bot --region=$REGION --quiet
 gcloud functions delete echo --gen2 --region=$REGION --quiet
 gcloud compute instances delete echo-vm --zone=$ZONE --quiet
+gcloud compute firewall-rules delete allow-echo-8080 --quiet
+gcloud compute networks subnets delete echo-subnet --region=$REGION --quiet
+gcloud compute networks delete echo-net --quiet
 ```
 
 ---
@@ -167,25 +199,19 @@ gcloud compute instances delete echo-vm --zone=$ZONE --quiet
 3. A **2-page comparison report** (`submission/phase1_report.md`) covering, for each of the
    three platforms: image size, measured cold vs warm latency (with your histogram/plot),
    scaling behaviour, cost model, and deployment effort — and *when you would choose each*.
+   Include your VPC and subnet names, and explain why the firewall rule targets a network tag
+   rather than an IP.
 
-## Grading rubric (100 pts)
+## How your work is checked
 
-| Check | Points | Where |
-|---|---:|---|
-| `build_echo` correct | 10 | public unit test |
-| `extract_message` correct (query + JSON + missing) | 10 | public unit test |
-| `/healthz` returns 200 "ok" | 5 | public unit test |
-| `GET /echo` echoes | 10 | public unit test |
-| `POST /echo` echoes | 5 | public unit test |
-| missing message → 400 | 5 | public unit test |
-| IaaS VM endpoint echoes (live) | 10 | public (live-curl) |
-| Cloud Run endpoint echoes (live) | 10 | public (live-curl) |
-| Cloud Function endpoint echoes (live) | 10 | public (live-curl) |
-| cold + warm latencies recorded for all three | 10 | public (report) |
-| the three URLs are distinct | 5 | **hidden** |
-| URLs look like real GCP endpoints (run.app / cloudfunctions / VM IP) | 10 | **hidden** |
-| **Total** | **100** | |
+Your grade comes from the autograder, plus any writeup listed under **Deliverables**, which
+the instructor assesses separately. Run the public suite yourself before you push (after deploying all three targets and running `measure.py`):
 
-The 2-page report is assessed separately by the instructor. Public checks (85 pts) you can
-see yourself: run `python -m pytest phase-1-echo-bot/tests -p autograder.points -q` (after
-deploying + `measure.py`); while coding just use `tests/test_units.py`.
+```bash
+python -m pytest phase-1-echo-bot/tests -p autograder.points -q
+```
+
+While coding, `phase-1-echo-bot/tests/test_units.py` alone is faster — it needs no cloud resources.
+The instructor also runs checks that are not in your repo, so a green public run is
+necessary but not sufficient.
+

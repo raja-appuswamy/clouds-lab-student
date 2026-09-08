@@ -4,6 +4,16 @@ Read [README.md](README.md) first. You **code** the two attention functions on a
 (Cloud Shell is fine for editing + the offline tests), then **train** in **Google Colab**
 with a **GPU runtime**. Work through the tasks in order.
 
+> **How these task sheets work.** Each cloud task states an *objective*, names the module and
+> lecture where you were taught the commands, and says what the autograder checks.
+> **The `gcloud` commands are not given** — you have already performed these operations in the
+> Google Cloud modules listed under each task. Code, tests and provided scripts are given in
+> full; only cloud operations are withheld. Nearly all of this phase runs in the notebook, so there is little to recall here — the heavy command practice is in Phases 1 and 5.
+>
+> **When you are stuck**, in this order: revisit the module named under the task; then
+> `gcloud <group> --help`; then <https://cloud.google.com/sdk/gcloud/reference>. Worked
+> commands are released after the submission deadline.
+
 ---
 
 ## Task 1 — Run the unit tests (implementing the model is optional)
@@ -74,8 +84,13 @@ bucket-level access), and upload `model.safetensors`. **Set `PROJECT` in that ce
 Phase-0 project id.**
 
 Your model URL is `https://storage.googleapis.com/<PROJECT>-eurecomgpt/model.safetensors`.
-Confirm it is public (open it in a browser — it should download). If bucket creation fails
-with an API error, enable Cloud Storage once: `gcloud services enable storage.googleapis.com`.
+Confirm it is public (open it in a browser — it should download).
+
+**Taught in.** Fundamentals M4 *Storage in the Cloud* · *Set Up an App Dev Environment* badge
+
+If bucket creation fails with an API error, you need to enable Cloud Storage on the project
+once — recall that command yourself.
+
 
 ---
 
@@ -105,21 +120,16 @@ python -m pytest phase-2-tiny-gpt/tests -p autograder.points -q   # full public 
 4. `submission/phase2_reflection.md` — the 1-page "where does parallelism stop helping?".
 5. A **green** `autograde-phase-2` CI run.
 
-## Grading rubric (100 pts)
+## How your work is checked
 
-Only the **mandatory** work is graded — the provided model code is not.
+Your grade comes from the autograder, plus any writeup listed under **Deliverables**, which
+the instructor assesses separately. Run the public suite yourself before you push (once the notebook has produced the report and the upload):
 
-| Check | Points | Where |
-|---|---:|---|
-| model code works (attention) — *provided solution, optional to write* | 0 | ungraded smoke check |
-| uploaded model is a ~5M-param model | 15 | public (GCS header) |
-| architecture matches spec (embedding, layers, head) | 20 | public (GCS header) |
-| all measurements present (attn, threads, cpu/gpu) | 15 | public (report) |
-| parallelism helped (vectorized<naive, GPU<CPU) | 15 | public (report) |
-| training + sample + model URL recorded | 10 | public (report) |
-| model actually trained (final loss < 3.0) | 15 | **hidden** |
-| training metadata sane (params, steps, sample, sweep) | 10 | **hidden** |
-| **Total** | **100** | |
+```bash
+python -m pytest phase-2-tiny-gpt/tests -p autograder.points -q
+```
 
-The notebook and the 1-page reflection are assessed separately by the instructor. Public
-checks (75 pts) you can verify yourself once the notebook has produced the report + upload.
+While coding, `phase-2-tiny-gpt/tests/test_units.py` alone is faster — it needs no cloud resources.
+The instructor also runs checks that are not in your repo, so a green public run is
+necessary but not sufficient.
+

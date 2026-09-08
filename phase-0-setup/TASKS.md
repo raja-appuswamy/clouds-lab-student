@@ -8,9 +8,15 @@ and the free-tier safety rules.
 > and can be **skipped in Cloud Shell**, where `gcloud`, Docker, git, and Python are already
 > installed.
 
+> **Note on this phase.** Phase 0 is setup, so **every command here is given in full** — a
+> student who cannot start is blocked on everything. From **Phase 1 onward the `gcloud`
+> commands are withheld**: each task states an objective and names the Google Cloud module
+> that taught the commands, and you recall them yourself.
+
 ## Tasks
 
 - [ ] **1. Create a GCP project.**
+  _Taught in: Fundamentals M2 — Resources and Access in the Cloud._
   Sign in at <https://console.cloud.google.com>, create a new project (note its
   **project id** — you will need it). Set a **Cloud Budget alert at €0.01** so you are
   emailed if anything ever bills. (If your $300 free trial has ended, you must have an
@@ -32,6 +38,7 @@ and the free-tier safety rules.
   _(local only)_ Instead, install git + your IDE locally and clone there.
 
 - [ ] **4. Point `gcloud` at your project and verify.**
+  _Taught in: Foundation M1 — Interacting with Google Cloud._
   In Cloud Shell, `gcloud` is already installed and authenticated as your account. Set the
   project and verify:
   ```bash
@@ -85,26 +92,16 @@ and the free-tier safety rules.
 1. Your **public GitHub repo URL** with the committed `submission/phase0_report.json` (produced by `verify_setup.py`).
 2. A **green** `autograde-phase-0` CI run on your latest push.
 
-## Grading rubric (100 pts)
+## How your work is checked
 
-Autograded — the point values match the test suite exactly.
+Your grade comes from the autograder, plus any writeup listed under **Deliverables**, which
+the instructor assesses separately. Run the public suite yourself before you push (after `verify_setup.py`):
 
-| Check | Points | Where |
-|---|---:|---|
-| `parse_gcloud_config` extracts account + project | 10 | public unit test |
-| `parse_gcloud_config` handles empty input | 5 | public unit test |
-| `parse_repo_slug` — HTTPS form | 10 | public unit test |
-| `parse_repo_slug` — SSH form | 10 | public unit test |
-| `parse_repo_slug` — rejects non-GitHub | 5 | public unit test |
-| Python is 3.11/3.12 | 5 | public (report) |
-| gcloud account + project configured | 5 | public (report) |
-| Docker installed | 5 | public (report) |
-| git remote is GitHub | 5 | public (report) |
-| Repo is *actually* public (GitHub API) | 25 | **hidden** |
-| Project id is a real GCP id, not a placeholder | 15 | **hidden** |
-| **Total** | **100** | |
+```bash
+python -m pytest phase-0-setup/tests -p autograder.points -q
+```
 
-Public checks (60 pts) you can verify yourself before submitting; hidden checks (40 pts)
-are run by the instructor. While coding, run the offline unit tests
-(`phase-0-setup/tests/test_units.py`); after `verify_setup.py`, run the full public suite
-(`phase-0-setup/tests`) to see your current public score.
+While coding, `phase-0-setup/tests/test_units.py` alone is faster — it needs no cloud resources.
+The instructor also runs checks that are not in your repo, so a green public run is
+necessary but not sufficient.
+

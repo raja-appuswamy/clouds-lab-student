@@ -2,15 +2,31 @@
 
 Do everything in **Google Cloud Shell**. Read [README.md](README.md) first.
 
+> **How these task sheets work.** Each cloud task states an *objective*, names the module and
+> lecture where you were taught the commands, and says what the autograder checks.
+> **The `gcloud` commands are not given** — you have already performed these operations in the
+> Google Cloud modules listed under each task. Code, tests and provided scripts are given in
+> full; only cloud operations are withheld.
+>
+> **When you are stuck**, in this order: revisit the module named under the task; then
+> `gcloud <group> --help`; then <https://cloud.google.com/sdk/gcloud/reference>. Worked
+> commands are released after the submission deadline.
+
 ---
 
 ## Task 1 — Enable Firestore and create the database
 
-```bash
-gcloud services enable firestore.googleapis.com
-# Create a Native-mode Firestore database (one per project; nam5 = US multi-region).
-gcloud firestore databases create --location=nam5
-```
+**Objective.** The Firestore API enabled, and a **Native-mode** Firestore database in your
+project. There is one database per project, and the location is permanent — use the `nam5`
+US multi-region.
+
+**Taught in.** Core Services M2 *Storage and Database Services* · Lecture 7
+
+**Verified by.** Task 3 writes to it; `run_phase4.py` fails immediately without it.
+
+> Native mode vs Datastore mode is a one-way choice. If the console offers you both, you want
+> Native — the client library this phase uses expects it.
+
 
 ---
 
@@ -18,7 +34,7 @@ gcloud firestore databases create --location=nam5
 
 Fill the TODO in [firestore_store.py](firestore_store.py) — the `_apply` transaction body
 (read the counter, append the message, bump the counter). Test it offline against the
-in-memory fake Firestore (no cloud needed):
+in-memory fake Firestore (no cloud needed). This task is code — commands given in full.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -29,6 +45,8 @@ python -m pytest phase-4-firestore/tests/test_units.py -p autograder.points -q
 ---
 
 ## Task 3 — Run it against real Firestore (ACID demo)
+
+The runner is provided — commands given in full.
 
 ```bash
 python phase-4-firestore/run_phase4.py
@@ -55,19 +73,16 @@ python -m pytest phase-4-firestore/tests -p autograder.points -q   # full public
 2. `submission/phase4_report.json` from a real Firestore run.
 3. A **green** `autograde-phase-4` CI run.
 
-## Grading rubric (100 pts)
+## How your work is checked
 
-| Check | Points | Where |
-|---|---:|---|
-| `send_message` appends messages + counts them | 20 | public unit test (fake Firestore) |
-| counter never drifts from message count | 20 | public unit test |
-| message fields (role/text/created_at) stored | 10 | public unit test |
-| `send_message` returns the new message id | 10 | public unit test |
-| transaction kept the counter exact on real Firestore | 15 | public (report) |
-| real Firestore write proof (counter = messages) | 10 | public (report) |
-| non-transactional path lost updates (the anomaly) | 10 | **hidden** |
-| project id is a real GCP id | 5 | **hidden** |
-| **Total** | **100** | |
+Your grade comes from the autograder, plus any writeup listed under **Deliverables**, which
+the instructor assesses separately. Run the public suite yourself before you push (after running `run_phase4.py`):
 
-Public checks (85 pts) you can verify yourself after running `run_phase4.py`; while coding,
-just use `tests/test_units.py`.
+```bash
+python -m pytest phase-4-firestore/tests -p autograder.points -q
+```
+
+While coding, `phase-4-firestore/tests/test_units.py` alone is faster — it needs no cloud resources.
+The instructor also runs checks that are not in your repo, so a green public run is
+necessary but not sufficient.
+
