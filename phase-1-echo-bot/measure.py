@@ -13,10 +13,13 @@ For each URL it: (1) checks correctness by echoing a random nonce, (2) times a f
 request (an approximate *cold* start) and a burst of *warm* requests, and (3) writes
 ``submission/phase1_report.json`` plus a short summary + ASCII latency chart.
 
-Note on cold starts: a true cold start needs the instance to have scaled to zero (Cloud
-Run/Functions with min-instances=0 do this after ~15 min idle). For an honest cold
-number, leave the service idle first, then run with ``--cold-only``. Otherwise the "cold"
-sample is just the first request and may already be warm — discuss this in your report.
+Note on cold starts: the "cold" sample is simply the FIRST request this script makes to
+each URL — nothing here forces the instance to be cold. A true cold start needs the
+service to have scaled to zero (Cloud Run/Functions with min-instances=0 do this after
+~15 min idle), so leave all three endpoints untouched for ~15 minutes and then run this
+ONCE with all three URLs: each target is probed cold-then-warm in turn, and the whole run
+finishes in under a minute. Note that this script REWRITES the report each time, so a run
+with a subset of the URLs discards the platforms you left out.
 """
 
 from __future__ import annotations

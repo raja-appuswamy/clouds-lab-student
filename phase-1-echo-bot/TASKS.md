@@ -119,7 +119,26 @@ Then find the VM's external IP.
 **Taught in.** Fundamentals M3 *Virtual Machines and Networks* · Foundation M3 *Virtual
 Machines* · Lecture 1
 
-**Verified by.** A live-curl test against the VM URL you record in `phase1_report.json`.
+**Verified by.** Test your service by browsing to `http://<EXTERNAL_IP>:8080/echo?msg=hello`.
+You should see the response to your GET request. The address bar can only issue GETs, so test
+the POST path from Cloud Shell — that also proves your firewall rule works, not just the
+container:
+
+```bash
+curl -s -X POST http://<EXTERNAL_IP>:8080/echo \
+     -H 'Content-Type: application/json' \
+     -d '{"message":"hello"}'
+```
+
+Expect `{"echo":"hello","length":5}`. Two things to watch: the JSON key is **`message`**, not
+`msg` (that is the query-string name), and the `Content-Type` header is required — get either
+wrong and you get a 400 instead of an echo.
+
+If the POST fails but the browser GET worked, run `curl localhost:8080/echo?msg=hi` from inside
+the VM: that separates a broken container from a blocked network.
+
+Live-curl tests (a GET and a JSON POST) against the VM URL you record will also be run by
+`phase1_report.json`.
 
 
 ---
@@ -131,7 +150,8 @@ image, scaling to zero, capped at 3 instances, listening on port 8080.
 
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · Lecture 2
 
-**Verified by.** A live-curl test against the `*.run.app` URL in your report.
+**Verified by.** Live-curl tests against the `*.run.app` URL in your report — a GET and
+a JSON POST, exactly as in Task 5.
 
 Scaling to zero matters: it is what makes the cold-start measurement in Task 8 meaningful,
 and what keeps this phase free.
@@ -147,7 +167,8 @@ from this phase's source with `echo` as the entry point, HTTP-triggered.
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · *Set Up an App Dev Environment*
 badge · Lecture 2
 
-**Verified by.** A live-curl test against the function URL in your report.
+**Verified by.** Live-curl tests against the function URL in your report — a GET and a
+JSON POST, exactly as in Task 5.
 
 Note that this path deploys **source**, not your image — that difference is worth a paragraph
 in the comparison report.
@@ -167,8 +188,31 @@ python phase-1-echo-bot/measure.py \
 ```
 
 This writes `submission/phase1_report.json` (URLs + cold/warm latencies) and prints a
-summary. For an honest **cold** number on Cloud Run/Functions, leave them idle ~15 min,
-then re-run with `--cold-only` and note the difference.
+summary.
+
+**Getting an honest cold number — order matters.** `measure.py` times its *first* request to
+each URL as the cold sample; it does nothing to force the instance to be cold. Cloud Run and
+your Function only scale to zero after roughly 15 minutes idle, so:
+
+1. **Finish all your correctness checks first** — the GET and POST tests from Tasks 5–7.
+2. **Then leave all three endpoints completely alone for ~15 minutes.** Any request restarts
+   the idle timer: a stray `curl`, a browser tab you left open on the echo URL, anything.
+3. **Then run the command above once, with all three URLs.** Each target is probed in turn
+   with its cold request before its warm burst, and the whole run takes under a minute — so
+   the later targets are still scaled to zero when their turn comes. One run gives you honest
+   cold *and* warm numbers for all three.
+
+Two things to avoid:
+
+- **Do not pass `--cold-only`.** It records no warm samples, and because `measure.py`
+  rewrites the whole report each time, a `--cold-only` run replaces your good data with a
+  report the grader rejects.
+- **Do not re-run with a subset of the URLs.** The report is overwritten wholesale, so
+  measuring just one platform deletes the other two.
+
+If a "cold" number comes back suspiciously close to your warm median, the instance had not
+scaled down yet — wait longer and run again. The VM has no meaningful cold start at all,
+since its container never stops; say so in your report.
 
 ---
 
@@ -181,14 +225,50 @@ Commit your `app.py`, `Dockerfile`, and `submission/phase1_report.json`, then pu
 
 ## Task 10 — Write the comparison report
 
-Produce the 2-page comparison described under **Deliverables** below.
+Don't start from a blank page — a template with every question already laid out is provided.
+Copy it and fill it in:
+
+```bash
+cp phase-1-echo-bot/report_template.md submission/phase1_report.md
+```
+
+Each answer sits between a pair of `<!--answer:...-->` markers. Replace the `TODO` line with
+your answer and **leave the markers alone** — they are how the report is read. Anything you
+write outside them is ignored, so add extra prose, tables or images freely.
+
+Your latency figures must **match `submission/phase1_report.json`**. Copy them across rather
+than retyping from memory; they are checked against what `measure.py` actually recorded.
+
+Check your own report before you submit — it reports every slot that is missing, unfilled,
+too short, or inconsistent with your measurements:
+
+```bash
+python phase-1-echo-bot/report_md.py submission/phase1_report.md submission/phase1_report.json
+```
 
 ---
 
-## Task 11 — Tear down (after you're graded)
+## Task 11 — Tear down as soon as your CI is green
 
-Protect your quota once your grade is in. **Commands given in full — never guess at
-teardown.** Delete the instance before the network, or the network delete will fail.
+**Do this the same day you finish — not at the end of the semester.**
+
+The live-curl checks run inside *your* GitHub Actions, so your three endpoints only need to be
+up at the moment that workflow runs. Once `autograde-phase-1` has gone green, that run is your
+evidence: the remaining hidden checks read only your committed `phase1_report.json`, so nothing
+has to stay deployed.
+
+> **Finish your pushes first.** Any later push re-runs the workflow, and if you have already
+> torn down, the live-curl tests fail and your green run is replaced by a red one. Commit
+> everything — code, report, comparison writeup — confirm green, *then* delete.
+
+**Why the hurry:** the VM is the one resource here that costs real money. The Always Free tier
+covers the `e2-micro` instance itself and its boot disk, but **an external IPv4 address is
+billed while it exists** — on the order of a few euros a month. Cloud Run and the Function
+scale to zero and cost nothing idle, so the VM is the urgent deletion; delete the rest anyway
+to keep the project clean.
+
+**Commands given in full — never guess at teardown.** Delete the instance before the network,
+or the network delete will fail.
 
 ```bash
 gcloud run services delete echo-bot --region=$REGION --quiet
@@ -200,18 +280,47 @@ gcloud compute networks subnets delete echo-subnet --region=$REGION --quiet
 gcloud compute networks delete echo-net --quiet
 ```
 
+Confirm nothing survived:
+
+```bash
+gcloud compute instances list
+gcloud run services list --region=$REGION
+```
+
+### Check your billing once
+
+Your Phase-0 budget alert emails you only *after* the first cent is spent, so look at the
+actual numbers once here rather than trusting it. In the Console go to
+**Billing → Reports**, filter to this project, and group by **SKU**.
+
+Everything in this phase should read €0 except, possibly, an external IP line for however long
+your VM existed. If you see anything else non-zero — a running instance you forgot, a service
+with `min-instances` above 0 — track it down now. Costs in this lab come from resources left
+running, never from the work itself, and every later phase assumes you still have your free
+trial credit intact.
+
 ---
 
 ## Deliverables
 
 1. Your repo with committed `app.py`, `Dockerfile`, and `submission/phase1_report.json`.
 2. A **green** `autograde-phase-1` CI run (offline tests + 3 live endpoints).
-3. A **2-page comparison report** (`submission/phase1_report.md`) covering, for each of the
+3. A **2-page comparison report** at `submission/phase1_report.md`, filled in from
+   [report_template.md](report_template.md) (Task 10), covering, for each of the
    three platforms: image size, measured cold vs warm latency (with your histogram/plot),
-   scaling behaviour, cost model, and deployment effort — and *when you would choose each*.
-   Include your VPC and subnet names, and explain why the firewall rule targets a network tag
-   rather than an IP; and say what is wrong with allowing TCP 22 from `0.0.0.0/0`
-   and what you would use instead in production.
+   scaling behaviour and deployment effort. It must also answer:
+
+   - **Why do two of your three numbers look alike?** Your Cloud Run and Cloud Function
+     timings are likely to sit much closer to each other than either does to the VM. With both
+     deployed, run:
+
+     ```bash
+     gcloud run services list
+     ```
+
+     Record what it shows. Then explain what that output tells you about how your Function is
+     actually being run, why its cold start resembles Cloud Run's so closely, and what — if
+     anything — genuinely differs between the two deployment paths.
 
 ## How your work is checked
 
