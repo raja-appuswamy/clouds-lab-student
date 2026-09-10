@@ -31,7 +31,7 @@ Work through the tasks below in order.
 **Objective.** Artifact Registry, Cloud Run, Cloud Functions, Cloud Build and Compute Engine
 are all enabled on your project.
 
-**Taught in.** Fundamentals M2 *Resources and Access in the Cloud* · Lecture 1
+**Taught in.** Fundamentals M2 *Resources and Access in the Cloud*
 
 **Verified by.** Nothing directly — but every later task fails without this.
 
@@ -72,7 +72,12 @@ built from this phase's `Dockerfile` and tagged `$IMAGE`.
 
 **Taught in.** Fundamentals M5 *Containers in the Cloud* · Lecture 2
 
-**Verified by.** Tasks 5–6 pull this image; the live-curl tests fail if it is missing.
+**Verified by.** Run command below. 
+```bash
+gcloud artifacts docker images list $REGION-docker.pkg.dev/$PROJECT/eurecomgpt
+```
+
+Tasks 5–6 pull this image; the live-curl tests fail if it is missing.
 
 Note the image size once it is pushed — you need it for the comparison report. The Artifact
 Registry console shows it, and so does the CLI.
@@ -83,11 +88,17 @@ Registry console shows it, and so does the CLI.
 ## Task 4 — Build a network to put it on
 
 **Objective.** A **custom-mode VPC** named `echo-net` with one subnet `echo-subnet` in
-`$REGION`, plus a firewall rule that allows inbound TCP 8080 from anywhere to instances
-carrying the network tag `echo-http`.
+`$REGION`, plus **two** ingress firewall rules for instances carrying the network tag
+`echo-http`: TCP **8080** for the app, and TCP **22** so you can SSH in at all.
 
 Do **not** use the `default` network. Every other phase in this lab hides networking behind
 managed services; this is the one place you build it yourself.
+
+> **The trap:** the `default` network ships with pre-populated rules including
+> `default-allow-ssh`. A **custom-mode VPC has none** — it starts with only two implied
+> rules, allow-all-egress and deny-all-ingress. If you create only the 8080 rule the VM
+> comes up fine and `gcloud compute ssh` then hangs and times out. That is the firewall,
+> not the VM.
 
 **Taught in.** Foundation M2 *Virtual Networks*
 
@@ -100,17 +111,15 @@ report, and be ready to explain in the report why the firewall rule needs the ta
 ## Task 5 — IaaS path: run the container on a VM in your subnet
 
 **Objective.** An `e2-micro` VM named `echo-vm` in `echo-subnet`, tagged `echo-http`, running
-your container and answering `http://<EXTERNAL_IP>:8080/echo?msg=hi`.
+your container and answering `http://<EXTERNAL_IP>:8080/echo?msg=hi`. You need to work out five things: create the instance on your own subnet with the right tag
+and a Debian image; give its service account permission to pull from Artifact Registry; SSH
+in; install and authenticate Docker on the VM; run your container detached on port 8080.
+Then find the VM's external IP.
 
 **Taught in.** Fundamentals M3 *Virtual Machines and Networks* · Foundation M3 *Virtual
 Machines* · Lecture 1
 
 **Verified by.** A live-curl test against the VM URL you record in `phase1_report.json`.
-
-You need to work out five things: create the instance on your own subnet with the right tag
-and a Debian image; give its service account permission to pull from Artifact Registry; SSH
-in; install and authenticate Docker on the VM; run your container detached on port 8080.
-Then find the VM's external IP.
 
 
 ---
@@ -186,6 +195,7 @@ gcloud run services delete echo-bot --region=$REGION --quiet
 gcloud functions delete echo --gen2 --region=$REGION --quiet
 gcloud compute instances delete echo-vm --zone=$ZONE --quiet
 gcloud compute firewall-rules delete allow-echo-8080 --quiet
+gcloud compute firewall-rules delete allow-echo-ssh --quiet
 gcloud compute networks subnets delete echo-subnet --region=$REGION --quiet
 gcloud compute networks delete echo-net --quiet
 ```
@@ -200,7 +210,8 @@ gcloud compute networks delete echo-net --quiet
    three platforms: image size, measured cold vs warm latency (with your histogram/plot),
    scaling behaviour, cost model, and deployment effort — and *when you would choose each*.
    Include your VPC and subnet names, and explain why the firewall rule targets a network tag
-   rather than an IP.
+   rather than an IP; and say what is wrong with allowing TCP 22 from `0.0.0.0/0`
+   and what you would use instead in production.
 
 ## How your work is checked
 

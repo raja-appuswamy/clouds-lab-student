@@ -35,10 +35,6 @@ provided `measure.py` to benchmark all three and write your submission report.
 
 ## Background reading (study before the tasks)
 
-Service models & the continuum (Lecture 1):
-- IaaS vs PaaS vs SaaS: <https://cloud.google.com/learn/paas-vs-iaas-vs-saas>
-- Serverless / FaaS overview: <https://cloud.google.com/discover/what-is-serverless>
-
 Containers & serverless (Lecture 2):
 - Docker multi-stage builds: <https://docs.docker.com/build/building/multi-stage/>
 - Why gunicorn for Flask in a container: <https://flask.palletsprojects.com/en/latest/deploying/gunicorn/>

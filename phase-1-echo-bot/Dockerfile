@@ -21,5 +21,5 @@ COPY --from=builder /install /usr/local
 COPY app.py .
 ENV PORT=8080
 EXPOSE 8080
-# TODO: set the CMD to launch gunicorn, binding 0.0.0.0:8080 and serving "app:app".
+# TODO: set the CMD to launch gunicorn, binding 0.0.0.0:8080 and serving "app:app". Use 1 worker and 8 threads.
 #       Use the JSON/exec form: CMD ["gunicorn", "--bind", "0.0.0.0:8080", ...]
