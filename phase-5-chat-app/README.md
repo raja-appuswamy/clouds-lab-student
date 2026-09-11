@@ -6,7 +6,7 @@ Firestore, and serves a browser UI — all on the free tier.
 
 **Lecture map:** Lecture 1 (SaaS/PaaS) · Lecture 2 (serverless/Cloud Run) · Lecture 7 (OLTP).
 
-Estimated time: ~8–10 hours (it's the integration phase). **Environment: Google Cloud Shell**
+This is the integration phase. **Environment: Google Cloud Shell**
 (build + deploy). **Prerequisites:** Phase 2 (a public `model.safetensors`), Phase 3 (the
 BigQuery `tfidf` table), Phase 4 (Firestore).
 

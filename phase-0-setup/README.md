@@ -7,8 +7,6 @@ you only create accounts and configure local tools.
 **Lecture map:** Lecture 1 (Introduction to Cloud Computing — the IaaS/PaaS/SaaS/FaaS
 service models, the big-four providers, the cloud stack).
 
-Estimated time: ~3 hours (mostly account creation and downloads).
-
 ---
 
 ## What you need before starting

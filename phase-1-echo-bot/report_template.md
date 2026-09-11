@@ -74,8 +74,8 @@ to the second question.)
 TODO
 <!--/answer-->
 
-**Deployment effort.** What did you have to build, configure and maintain for each? Count the
-steps and the things that can break. (~100 words)
+**Deployment effort.** What did you have to build, configure and maintain to get each of the
+three running? (~100 words)
 
 <!--answer:deployment_effort-->
 TODO

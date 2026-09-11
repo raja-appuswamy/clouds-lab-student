@@ -2,7 +2,7 @@
 
 You implement the heart of the transformer — ``scaled_dot_product_attention`` — and the
 rest of the network is provided. You train this in Colab (see the notebook + TASKS.md),
-across CPU / threaded / GPU / TPU runtimes, then upload the weights to Cloud Storage.
+across CPU / threaded / GPU runtimes, then upload the weights to Cloud Storage.
 
 Imports torch, so this module is used in Colab; the autograder never imports it (it checks
 your uploaded weights by their shapes). Architecture dims live in ``config.py``.

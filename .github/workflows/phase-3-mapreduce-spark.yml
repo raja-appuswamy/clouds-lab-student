@@ -1,10 +1,12 @@
 # Student-side autograding CI for Phase 3.
 #
-# Grades the MapReduce code offline (pure Python) and validates your TF-IDF output by
-# downloading the Parquet from your public GCS URL (recorded in phase3_report.json). No
-# Spark, no Java, no credentials — Spark runs in Colab; here we check code + artifact.
+# Grades the MapReduce code offline (pure Python, with an in-memory Cloud Storage fake for
+# the cloud-job path) and validates your outputs by downloading the public wordcount.json
+# and TF-IDF Parquet from the GCS URLs recorded in phase3_report.json. No Spark, no Java,
+# no GCP credentials — the cloud job ran from Cloud Shell, Spark ran in Colab; here we check
+# code + artifacts.
 #
-# Keep your GCS Parquet object public until you're graded, or the output checks go red.
+# Keep wordcount.json and tfidf.parquet public until you're graded, or these checks go red.
 name: autograde-phase-3
 
 on:
@@ -32,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r phase-3-mapreduce-spark/requirements.txt
 
-      - name: Run autograder tests (offline MapReduce + Parquet output + report)
+      - name: Run autograder tests (offline MapReduce + public outputs + report)
         run: >
           python -m pytest phase-3-mapreduce-spark/tests
           -p autograder.points

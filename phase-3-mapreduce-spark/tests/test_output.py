@@ -1,7 +1,7 @@
 """Phase 3 output tests — validate the TF-IDF Parquet you uploaded to public GCS.
 
 Downloads the Parquet from ``report.tfidf.parquet_gcs_url`` and checks it is a real TF-IDF
-table. No Spark needed. Keep the GCS object public until graded. (30 points.)
+table. No Spark needed. Keep the GCS object public until graded. (24 points.)
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from autograder.points import points
 EXPECTED_COLUMNS = {"term", "doc_id", "tf", "df", "idf", "tfidf"}
 
 
-@points(15)
+@points(12)
 def test_parquet_schema(parquet_table):
     cols = set(parquet_table.column_names)
     assert EXPECTED_COLUMNS.issubset(cols), (
@@ -19,7 +19,7 @@ def test_parquet_schema(parquet_table):
     )
 
 
-@points(15)
+@points(12)
 def test_parquet_values_sane(parquet_table):
     t = parquet_table
     assert t.num_rows >= 200, f"too few TF-IDF rows ({t.num_rows}) — did the full corpus run?"

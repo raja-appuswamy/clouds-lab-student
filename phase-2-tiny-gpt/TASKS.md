@@ -56,8 +56,6 @@ Run the notebook cells top to bottom:
 2. **CPU threading sweep** — `torch.set_num_threads(1..8)`; the plot shows where extra
    threads stop helping (the contention point).
 3. **GPU (CUDA)** — the same training loop on the T4; expect a large speedup vs CPU.
-4. **TPU** — optionally switch to a TPU runtime and run with `torch_xla`; otherwise explain
-   the systolic-array execution in your reflection and record any timing you got.
 
 ---
 

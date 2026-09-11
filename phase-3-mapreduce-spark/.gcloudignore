@@ -1,0 +1,14 @@
+# What `gcloud functions deploy --source=phase-3-mapreduce-spark` should NOT upload.
+# The worker only needs main.py, mapreduce.py and requirements.txt.
+.gcloudignore
+__pycache__/
+*.pyc
+tests/
+notebook.ipynb
+ci/
+*.md
+workflow.yaml
+run_mr.py
+corpus.py
+spark_tfidf.py
+report.py

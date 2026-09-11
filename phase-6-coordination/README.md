@@ -7,8 +7,8 @@ the consistency anomalies they defend against.
 
 **Lecture map:** Lecture 9 (consistency models, CAP) · Lecture 10 (2PC) · Lecture 11 (Raft).
 
-Estimated time: ~12 hours over two weeks — the heaviest phase (it carries the most grade
-weight). **Environment: Google Cloud Shell.** **Prerequisite:** Phase 4 (Firestore).
+The heaviest phase — it carries the most grade weight. **Environment: Google Cloud Shell.**
+**Prerequisite:** Phase 4 (Firestore).
 
 ---
 

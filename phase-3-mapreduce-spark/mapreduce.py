@@ -1,8 +1,13 @@
-"""Word-count MapReduce with Python multiprocessing — a stand-in for Hadoop.
+"""Word-count MapReduce — the primitives you implement, run two ways.
 
 This is the Lecture-5 core: you implement the three MapReduce primitives — **map**,
-**shuffle**, **reduce** — and `word_count` wires them together (running the map phase
-across worker processes, exactly as Hadoop farms map tasks across a cluster).
+**shuffle**, **reduce**. They are then executed:
+
+* **locally** by ``word_count`` (provided) — one process, the reference answer; and
+* **in the cloud** by ``main.py`` + ``workflow.yaml`` — each map task is a Cloud Run
+  function invocation, Cloud Storage is the shuffle medium, and Cloud Workflows is the
+  job tracker that fans tasks out and retries the ones that fail (what Hadoop's JobTracker
+  does across a cluster). ``run_mr.py`` drives a job and checks cloud == local.
 
 Pure Python, no heavy deps — run the offline unit tests as you go:
 
@@ -11,8 +16,8 @@ Pure Python, no heavy deps — run the offline unit tests as you go:
 
 from __future__ import annotations
 
-import multiprocessing
 import re
+import zlib
 
 _WORD = re.compile(r"[a-z]+")
 
@@ -27,6 +32,17 @@ STOPWORDS = {
 def tokenize(text: str) -> list[str]:
     """Lower-case, keep alphabetic words of length >= 2, drop stop-words (provided)."""
     return [w for w in _WORD.findall(text.lower()) if len(w) >= 2 and w not in STOPWORDS]
+
+
+def partition(word: str, num_reducers: int) -> int:
+    """Which reducer owns ``word`` (provided) — Hadoop's *Partitioner*.
+
+    Every map task must send the same word to the same reducer, or the counts for that
+    word end up split across two output files. So the hash has to be stable across
+    processes and machines: ``zlib.crc32`` is; Python's built-in ``hash()`` is NOT (it is
+    salted per process — see PYTHONHASHSEED), which is a classic distributed-systems bug.
+    """
+    return zlib.crc32(word.encode("utf-8")) % num_reducers
 
 
 # --------------------------------------------------------------------------- #
@@ -51,20 +67,14 @@ def reduce_wc(grouped: dict[str, list[int]]) -> dict[str, int]:
 
 
 # --------------------------------------------------------------------------- #
-# Orchestration (provided): map phase runs across worker processes
+# Local reference runner (provided)
 # --------------------------------------------------------------------------- #
-def word_count(documents: list[tuple[int, str]], workers: int = 1) -> dict[str, int]:
-    """Full MapReduce word count over ``[(doc_id, text), ...]``.
+def word_count(documents: list[tuple[int, str]]) -> dict[str, int]:
+    """Full MapReduce word count over ``[(doc_id, text), ...]`` in ONE process.
 
-    With ``workers > 1`` the MAP phase is farmed to a process pool (the "distributed"
-    part); the shuffle + reduce then run locally. With ``workers == 1`` it stays
-    sequential (what the unit tests use — deterministic, no process-pool overhead).
+    Map every document, shuffle all the pairs, reduce — the same three calls the cloud
+    workers make, minus the network. This is the reference the cloud job is checked
+    against (``run_mr.py`` asserts the two agree) and what the unit tests use.
     """
-    texts = [text for _, text in documents]
-    if workers > 1:
-        with multiprocessing.Pool(workers) as pool:
-            mapped = pool.map(map_wc, texts)
-    else:
-        mapped = [map_wc(t) for t in texts]
-    pairs = [pair for sublist in mapped for pair in sublist]
+    pairs = [pair for _, text in documents for pair in map_wc(text)]
     return reduce_wc(shuffle(pairs))

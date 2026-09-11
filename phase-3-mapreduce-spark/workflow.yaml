@@ -1,0 +1,121 @@
+# Cloud Workflows definition: the MapReduce *job tracker* (provided — no TODOs).
+#
+# Hadoop's JobTracker (YARN's ApplicationMaster today) does three things: it fans map
+# tasks out across the cluster, waits for all of them before starting the reducers
+# (the barrier between the phases), and re-runs any task that fails. This workflow does
+# exactly those three things, with Cloud Run function invocations as the tasks.
+#
+# Deploy:   gcloud workflows deploy mr-wordcount --source=phase-3-mapreduce-spark/workflow.yaml ...
+# Run:      python phase-3-mapreduce-spark/run_mr.py ...   (see TASKS.md)
+#
+# Input (JSON):
+#   worker_url    URL of your deployed mr-worker function
+#   bucket        Cloud Storage bucket holding <job>/input/, receiving shuffle/ and output/
+#   job           a per-run prefix, e.g. "mr-20260911-153000"
+#   num_splits    number of map tasks (input splits)
+#   num_reducers  number of reduce tasks (output partitions)
+#   chaos         optional failure probability per task attempt (0 = none)
+main:
+  params: [args]
+  steps:
+    - init:
+        assign:
+          - worker_url: ${args.worker_url}
+          - bucket: ${args.bucket}
+          - job: ${args.job}
+          - num_splits: ${int(args.num_splits)}
+          - num_reducers: ${int(args.num_reducers)}
+          - chaos: ${default(map.get(args, "chaos"), 0)}
+          - map_results: []
+          - reduce_results: []
+
+    # ---- MAP PHASE: one task per input split, all running concurrently --------------- #
+    # `parallel` + `for` = fan-out. `shared` lets every branch append to the same list.
+    # `try`/`retry` is the fault tolerance: a task that answers 503 (or times out) is
+    # simply invoked again, up to 5 times with exponential backoff. The task itself
+    # knows nothing about this — which is why it must be idempotent.
+    - map_phase:
+        parallel:
+          shared: [map_results]
+          for:
+            value: split
+            range:
+              - 0
+              - ${num_splits - 1}
+            steps:
+              - call_map:
+                  try:
+                    call: http.post
+                    args:
+                      url: ${worker_url}
+                      auth:
+                        type: OIDC
+                      timeout: 300
+                      body:
+                        task: map
+                        bucket: ${bucket}
+                        job: ${job}
+                        split: ${split}
+                        num_reducers: ${num_reducers}
+                        chaos: ${chaos}
+                    result: map_resp
+                  retry:
+                    predicate: ${http.default_retry_predicate}
+                    max_retries: 5
+                    backoff:
+                      initial_delay: 1
+                      max_delay: 10
+                      multiplier: 2
+              - record_map:
+                  assign:
+                    - map_results: ${list.concat(map_results, map_resp.body)}
+
+    # ---- BARRIER: nothing below runs until every branch above has finished ----------- #
+    # (That is just the semantics of a `parallel` step: it completes when all branches do.
+    # In Hadoop this is the reason reducers cannot start summing until the last mapper
+    # is done — a reducer's key may still be arriving from a straggler.)
+
+    # ---- REDUCE PHASE: one task per output partition ----------------------------------- #
+    - reduce_phase:
+        parallel:
+          shared: [reduce_results]
+          for:
+            value: part
+            range:
+              - 0
+              - ${num_reducers - 1}
+            steps:
+              - call_reduce:
+                  try:
+                    call: http.post
+                    args:
+                      url: ${worker_url}
+                      auth:
+                        type: OIDC
+                      timeout: 300
+                      body:
+                        task: reduce
+                        bucket: ${bucket}
+                        job: ${job}
+                        partition: ${part}
+                        num_splits: ${num_splits}
+                        chaos: ${chaos}
+                    result: reduce_resp
+                  retry:
+                    predicate: ${http.default_retry_predicate}
+                    max_retries: 5
+                    backoff:
+                      initial_delay: 1
+                      max_delay: 10
+                      multiplier: 2
+              - record_reduce:
+                  assign:
+                    - reduce_results: ${list.concat(reduce_results, reduce_resp.body)}
+
+    - done:
+        return:
+          job: ${job}
+          num_splits: ${num_splits}
+          num_reducers: ${num_reducers}
+          map_tasks: ${map_results}
+          reduce_tasks: ${reduce_results}

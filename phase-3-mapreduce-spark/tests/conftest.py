@@ -25,7 +25,8 @@ def report() -> dict:
     if not REPORT_PATH.exists():
         pytest.fail(
             "submission/phase3_report.json not found — run the Colab notebook to the end "
-            "(MapReduce, Spark TF-IDF, upload to GCS, load BigQuery). See TASKS.md."
+            "(it folds in your cloud MapReduce result, then Spark TF-IDF, upload to GCS, "
+            "load BigQuery). See TASKS.md."
         )
     try:
         return json.loads(REPORT_PATH.read_text(encoding="utf-8"))
@@ -47,3 +48,17 @@ def parquet_table(report):
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as exc:
         pytest.fail(f"could not fetch Parquet from {url}: {exc}")
     return pq.read_table(pa.BufferReader(data))
+
+
+@pytest.fixture(scope="session")
+def public_wordcount(report) -> dict:
+    """Download the merged MapReduce counts run_mr.py published (public GCS JSON)."""
+    url = report.get("mapreduce", {}).get("wordcount_gcs_url", "")
+    if not url:
+        pytest.fail("report has no mapreduce.wordcount_gcs_url — did run_mr.py finish, and did "
+                    "you commit submission/phase3_mapreduce.json before running the notebook?")
+    try:
+        data = urllib.request.urlopen(url, timeout=60).read()
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as exc:
+        pytest.fail(f"could not fetch wordcount.json from {url}: {exc}")
+    return json.loads(data.decode("utf-8"))

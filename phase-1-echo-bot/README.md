@@ -7,7 +7,7 @@ first-hand (image size, cold start, scaling, cost, effort).
 **Lecture map:** Lecture 1 (IaaS / PaaS / SaaS / FaaS service models) · Lecture 2
 (virtualization → containers → serverless; Docker; cold start; autoscaling).
 
-Estimated time: ~6 hours. Do everything in **Google Cloud Shell** (see the top-level
+Do everything in **Google Cloud Shell** (see the top-level
 README). **Prerequisite:** Phase 0 complete — a GCP project with billing active and
 `gcloud` configured.
 

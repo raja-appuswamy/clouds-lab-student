@@ -1,7 +1,9 @@
-# Autograder/test deps for Phase 3 — kept light: NO pyspark. The grader validates your
-# TF-IDF *output* (the Parquet you upload) rather than running Spark, so it only needs
-# pyarrow to read Parquet.
+# Phase 3 dependencies — one file, three consumers:
+#   * the mr-worker Cloud Run function (gcloud reads this at deploy time),
+#   * run_mr.py in Cloud Shell (drives the workflow),
+#   * the autograder in CI (reads your Parquet + wordcount.json).
+# NO pyspark: Spark runs only in Colab (the notebook installs it there).
+functions-framework>=3.5,<4
+google-cloud-storage>=2.14,<4
+google-cloud-workflows>=1.14,<2
 pyarrow>=14
-#
-# In Colab you additionally need (the notebook installs these):
-#   pyspark  pyarrow  google-cloud-storage  google-cloud-bigquery

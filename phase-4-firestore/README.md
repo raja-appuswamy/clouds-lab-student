@@ -6,7 +6,7 @@ Raft work over this exact schema. You package it as a reusable **`firestore_stor
 
 **Lecture map:** Lecture 7 (OLTP, ACID, transaction concurrency control).
 
-Estimated time: ~4 hours. **Environment: Google Cloud Shell** (no Colab, no GPU — just the
+**Environment: Google Cloud Shell** (no Colab, no GPU — just the
 Firestore client). **Prerequisite:** Phase 0 (a GCP project + `gcloud`).
 
 ---
