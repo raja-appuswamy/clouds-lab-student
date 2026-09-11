@@ -87,9 +87,10 @@ only caller is the workflow, so the only invoker is its service account.
 ## Task 4 — Deploy the worker function
 
 **Objective.** A **2nd-gen** (Cloud Run) Python function named **`mr-worker`**, entry point
-`mr_worker`, deployed from source `phase-3-mapreduce-spark/`, running as `mr-runner`, in a
-region you will reuse for the workflow. It must **not** be publicly invokable — the flag you
-added in Phase 1 is exactly the one to leave out.
+`mr_worker`, deployed from source `phase-3-mapreduce-spark/`, running as `mr-runner`, in the
+same region as your Phase 1 deployments (`us-central1`) — you will reuse it for the workflow.
+It must **not** be publicly invokable — the flag you added in Phase 1 is exactly the one to
+leave out.
 
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · Phase 1 Task 7
 
