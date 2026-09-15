@@ -55,11 +55,10 @@ TF-IDF definitions used throughout (keep them so your output matches the grader)
 - **Parquet** (columnar file format): <https://parquet.apache.org/docs/overview/>
 - **BigQuery** — load from GCS, query: <https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-parquet>
 
-For the **writeup**, be able to explain: which steps are transformations vs actions; where
-lineage recovers a lost partition without recomputing everything; which GCP service played
-which Hadoop role in your cloud job, and why map tasks must be idempotent for retries to be
-safe; and why the cloud job is *slower* than one process on this corpus — and at what scale
-that flips.
+For the **writeup**, be able to explain: why the three wall times rank as they do (and which
+two are like-for-like); which steps are transformations vs actions; where lineage recovers a
+lost partition without recomputing everything; which GCP service played which Hadoop role in
+your cloud job, and why map tasks must be idempotent for retries to be safe.
 
 ---
 

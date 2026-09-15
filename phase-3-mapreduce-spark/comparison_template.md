@@ -30,6 +30,26 @@ Numbers only (e.g. `12`, `20.3`, `0.041`).
 | Number of **stages** in the Spark job (read off notebook 2b / 3a) | <!--answer:num_stages-->TODO<!--/answer--> |
 | Task **retries** you counted in your `--chaos` run (0 if none happened) | <!--answer:chaos_retries-->TODO<!--/answer--> |
 
+**Explain the timings.** The three wall times above cover the same 60 documents, but not the
+same job: the single-process run and the cloud MapReduce are *the same word count*; Spark's
+time is for *TF-IDF*, which is more work (two `reduceByKey`s and a `join`). Rank the three and
+explain what each is spending its time on. Say which comparison is like-for-like, and what the
+Spark number — a heavier job, on one machine — tells you about where the cloud job's time goes.
+(~80 words)
+
+<!--answer:timing_explanation-->
+TODO
+<!--/answer-->
+
+**What the counts tell you.** From your stage count: how many shuffles did the Spark job have,
+and which operations in `spark_tfidf.py` caused them? From your retry count: roughly what
+fraction of the 16 task attempts was retried, and is that what `--chaos 0.3` should produce?
+(~50 words)
+
+<!--answer:counts_interpretation-->
+TODO
+<!--/answer-->
+
 ---
 
 ## 2. Spark: transformations, actions, lineage
@@ -87,40 +107,5 @@ with `--chaos 0.3`? Did the job still succeed, and was the final answer still id
 local reference? (~50 words)
 
 <!--answer:chaos_observations-->
-TODO
-<!--/answer-->
-
----
-
-## 4. Three runtimes, one corpus
-
-**Explain the timings.** Section 1 has three wall times over the same 60 documents. Two are
-the *same job* — the word count, run single-process and as the cloud MapReduce — and the
-third is *more work*: Spark's TF-IDF (two `reduceByKey`s and a `join`), run locally. Rank
-them and explain *why* each is where it is — what is each one spending its time on? Be
-explicit about which comparison is like-for-like and which is not, and what that tells you
-about where the cloud job's time actually goes. (~90 words)
-
-<!--answer:three_runtimes-->
-TODO
-<!--/answer-->
-
-**Break-even.** Estimate — with a number and a one-line justification — how large the corpus
-would have to be before the cloud MapReduce job beats the single process. State your
-assumptions about per-task overhead and per-document work. (~50 words)
-
-<!--answer:breakeven_estimate-->
-TODO
-<!--/answer-->
-
----
-
-## 5. Object storage as the distributed file system
-
-Both halves of this phase used Cloud Storage where Hadoop would use HDFS — for the shuffle
-files and for the Parquet. Name two ways object storage differs from HDFS that matter for a
-job like this (think: locality, consistency, blocks and replication, metadata). (~50 words)
-
-<!--answer:gcs_vs_hdfs-->
 TODO
 <!--/answer-->

@@ -223,7 +223,7 @@ authenticates with `google.colab.auth.authenticate_user()` and then uses the Clo
 
 **Taught in.** Fundamentals M4 *Storage in the Cloud* · Lecture 8 *Distributed file systems* —
 object storage is the distributed file system underneath *both* halves of this phase: the
-MapReduce shuffle files and this Parquet. Note in your writeup how it differs from HDFS.
+MapReduce shuffle files and this Parquet.
 
 Your Parquet URL is `https://storage.googleapis.com/<PROJECT>-eurecomgpt/tfidf.parquet` —
 confirm it downloads in a browser.
@@ -260,12 +260,11 @@ cp phase-3-mapreduce-spark/comparison_template.md submission/phase3_comparison.m
 Fill in every answer slot — leave the `<!--answer:...-->` markers in place, they are how the
 grader finds your answers. The template asks, in order: the **facts** from your runs (task
 counts, the three wall times, the stage count, the retries you saw — the numbers must match
-`phase3_report.json`); **Spark** — transformations vs actions, and where lineage lets a lost
+`phase3_report.json`) and what they mean — rank and explain the three timings (which pair is
+like-for-like?), and read shuffles and retry rate off your stage and retry counts; **Spark** — transformations vs actions, and where lineage lets a lost
 partition be recovered, read off notebook 2b/3a; **your cloud MapReduce mapped onto Hadoop** —
 JobTracker, workers, HDFS, Partitioner, where the barrier is, why idempotence makes the retry
-policy safe, what the chaos run showed; **three runtimes, one corpus** — explain the timings
-(word count vs cloud word count is like-for-like; Spark's TF-IDF is more work) and estimate the
-break-even corpus size; and **object storage vs HDFS**.
+policy safe, what the chaos run showed.
 
 Every slot is read and checked when your work is graded — fill them all, keep the numbers
 honest, and answer the question that is asked.
