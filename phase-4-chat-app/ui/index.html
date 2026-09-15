@@ -25,6 +25,7 @@
   <div class="cfg">
     <input id="api" placeholder="Cloud Run URL, e.g. https://chat-xxx.run.app" />
     <input id="session" placeholder="session id" value="web-1" />
+    <button id="history" title="Ask the server what it remembers of this session">Load history</button>
   </div>
   <div id="log"></div>
   <div class="row">
@@ -68,13 +69,33 @@
       });
       const data = await res.json();
       add("assistant", data.reply || "(no reply)",
-          "retrieved docs: " + JSON.stringify(data.retrieved || []));
+          "retrieved docs: " + JSON.stringify(data.retrieved || []) +
+          " · store: " + data.store + " · instance: " + data.instance);
+    } catch (err) {
+      add("assistant", "Error: " + err);
+    }
+  }
+
+  // Re-read the session from the server. Phase 4: whatever THIS container remembers (nothing,
+  // if it is a fresh instance). Phase 5: the same turns, from Firestore, whichever instance answers.
+  async function loadHistory() {
+    const api = $("api").value.trim().replace(/\/$/, "");
+    if (!api) return;
+    $("log").innerHTML = "";
+    try {
+      const res = await fetch(api + "/sessions/" + encodeURIComponent($("session").value || "web-1") + "/messages");
+      if (res.status === 404) { add("assistant", "(server has no memory of this session)"); return; }
+      const data = await res.json();
+      for (const m of data.messages || []) add(m.role, m.text);
+      add("assistant", "— " + data.message_count + " messages · store: " + data.store +
+          " · instance: " + data.instance + " —");
     } catch (err) {
       add("assistant", "Error: " + err);
     }
   }
 
   $("send").addEventListener("click", send);
+  $("history").addEventListener("click", loadHistory);
   $("message").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
 </script>
 </body>

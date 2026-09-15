@@ -1,8 +1,10 @@
 # Phase 3 — Distributed data processing: MapReduce & Spark for RAG
 
+> New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
+
 **Goal:** prepare the retrieval corpus for your chat app two ways — classic **MapReduce**
 and **Apache Spark** — then land the result in **Cloud Storage** and **BigQuery**. You build
-a **TF-IDF index** that Phase 5's RAG step will query.
+a **TF-IDF index** that Phase 4's RAG step will query.
 
 **Lecture map:** Lecture 4 (inter-node parallelism, RPC/network) · Lecture 5 (MapReduce) ·
 Lecture 6 (Spark: RDDs, transformations vs actions, lineage).

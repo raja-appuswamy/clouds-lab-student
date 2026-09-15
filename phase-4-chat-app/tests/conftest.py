@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-PHASE_DIR = Path(__file__).resolve().parents[1]        # phase-4-firestore/
+PHASE_DIR = Path(__file__).resolve().parents[1]        # phase-4-chat-app/
 REPO_ROOT = PHASE_DIR.parent
 REPORT_PATH = REPO_ROOT / "submission" / "phase4_report.json"
 
@@ -19,11 +19,11 @@ for p in (str(REPO_ROOT), str(PHASE_DIR)):
 
 @pytest.fixture(scope="session")
 def report() -> dict:
-    """Load submission/phase4_report.json (written by run_phase4.py against real Firestore)."""
+    """Load submission/phase4_report.json (written by make_report.py)."""
     if not REPORT_PATH.exists():
         pytest.fail(
-            "submission/phase4_report.json not found — run "
-            "`python phase-4-firestore/run_phase4.py` (in Cloud Shell) first. See TASKS.md."
+            "submission/phase4_report.json not found — deploy the chat app, then run "
+            "`python phase-4-chat-app/make_report.py --chat-url ... --ui-url ...`. See TASKS.md."
         )
     try:
         return json.loads(REPORT_PATH.read_text(encoding="utf-8"))

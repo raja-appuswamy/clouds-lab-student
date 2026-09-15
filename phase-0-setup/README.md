@@ -1,5 +1,7 @@
 # Phase 0 — Setup
 
+> New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
+
 **Goal:** get your whole toolchain ready so that from Phase 1 onward you spend time on
 cloud concepts, not installation. **Zero cloud compute is consumed in this phase** —
 you only create accounts and configure local tools.

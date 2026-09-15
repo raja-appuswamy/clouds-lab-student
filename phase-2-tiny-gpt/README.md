@@ -1,5 +1,7 @@
 # Phase 2 — Intra-node parallelism: train your own tiny transformer
 
+> New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
+
 **Goal:** train a small GPT while exercising the three layers of parallelism *inside a
 single node* — CPU vectorization (SIMD), CPU threads, and GPU acceleration — and
 measure where each stops helping.

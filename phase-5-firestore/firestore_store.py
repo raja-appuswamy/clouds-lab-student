@@ -1,7 +1,9 @@
-"""Reusable Firestore store for chat sessions & messages (Phase 4).
+"""Reusable Firestore store for chat sessions & messages (Phase 5).
 
-Phases 5 and 6 ``import`` this module: Phase 5 records every chat turn with `send_message`;
-Phase 6 builds 2PC / consistency / Raft work on the same schema.
+This is what makes the chat app remember. Phase 4's server kept turns in a dict inside the
+container and you watched them vanish; here the same server gets this module instead
+(``STORE_BACKEND=firestore``), and Phase 6 builds its 2PC / consistency / Raft work on the
+same schema.
 
 Data model:
     sessions/{session_id}                     -> {id, created_at, message_count}
@@ -9,8 +11,9 @@ Data model:
 
 You implement the transaction body ``_apply`` — the read-modify-write that must be atomic.
 Develop against the in-memory ``fake_firestore`` (offline unit tests), then run against real
-Firestore in ``run_phase4.py``. The same code works on both — the real client and the fake
-expose the same methods.
+Firestore in ``run_phase5.py``. The same code works on both — the real client and the fake
+expose the same methods — and the same file is copied into the chat image, so the server's
+every turn goes through *your* transaction.
 """
 
 from __future__ import annotations
@@ -41,7 +44,7 @@ def _apply(transaction, session_ref, msg_ref, role: str, text: str, now: str) ->
     #   3. transaction.set(msg_ref, {"role": role, "text": text, "created_at": now})
     #   4. transaction.update(session_ref, {"message_count": count + 1})
     #   5. return msg_ref.id
-    raise NotImplementedError("Phase 4: implement _apply()")
+    raise NotImplementedError("Phase 5: implement _apply()")
 
 
 def run_in_transaction(db, func):

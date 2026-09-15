@@ -1,0 +1,11 @@
+# Cloud Build config: build the Firestore-backed chat image from the repo root (provided).
+#
+# `gcloud builds submit <dir> --tag` only works when the Dockerfile sits at the top of the
+# build context. This image needs files from phase-4-chat-app/ AND phase-5-firestore/, so the
+# context is the repo root and the Dockerfile is named explicitly here.
+#
+#   gcloud builds submit . --config=phase-5-firestore/cloudbuild.yaml --substitutions=_IMAGE=$IMAGE
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "phase-5-firestore/Dockerfile", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]

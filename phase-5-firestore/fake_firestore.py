@@ -7,7 +7,7 @@ here works against the real thing.
 
 NOTE: this fake applies transaction writes immediately (single-threaded); it verifies your
 read-modify-write *logic*, not real concurrency. The actual ACID/contention behaviour you
-demonstrate against real Firestore in ``run_phase4.py``.
+demonstrate against real Firestore in ``run_phase5.py``.
 """
 
 from __future__ import annotations

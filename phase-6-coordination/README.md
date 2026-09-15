@@ -1,5 +1,7 @@
 # Phase 6 — Distributed coordination: 2PC & a toy Raft
 
+> New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
+
 **Goal:** make the chat app correct under partial failure — the hardest lecture material put
 into practice. You implement the **two-phase commit** and **Raft** protocols, prove they
 behave correctly (including under coordinator crashes and network partitions), and reproduce
@@ -8,7 +10,7 @@ the consistency anomalies they defend against.
 **Lecture map:** Lecture 9 (consistency models, CAP) · Lecture 10 (2PC) · Lecture 11 (Raft).
 
 The heaviest phase — it carries the most grade weight. **Environment: Google Cloud Shell.**
-**Prerequisite:** Phase 4 (Firestore).
+**Prerequisite:** Phase 5 (Firestore).
 
 ---
 

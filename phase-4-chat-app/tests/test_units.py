@@ -1,8 +1,8 @@
-"""Phase 5 unit tests — offline, pure Python (no cloud, no report).
+"""Phase 4 unit tests — offline, pure Python (no cloud, no report).
 
 Test your RAG helpers in ``rag.py``. Run while coding:
 
-    python -m pytest phase-5-chat-app/tests/test_units.py -p autograder.points -q
+    python -m pytest phase-4-chat-app/tests/test_units.py -p autograder.points -q
 
 (40 points.)
 """

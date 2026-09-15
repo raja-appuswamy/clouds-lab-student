@@ -1,0 +1,15 @@
+# What `gcloud builds submit .` (repo-root build context, Phase 5) should NOT upload.
+# Only the chat server sources and the two requirements files are needed by the Dockerfile.
+.git/
+.gcloudignore
+.venv/
+dist/
+tools/
+__pycache__/
+*.pyc
+*.ipynb
+**/tests/
+**/ci/
+**/ui/
+submission/
+*.md

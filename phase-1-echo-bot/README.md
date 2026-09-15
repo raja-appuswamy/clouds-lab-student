@@ -1,5 +1,7 @@
 # Phase 1 — From IaaS to Serverless: a containerized echo bot
 
+> New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
+
 **Goal:** deploy one tiny web service **three ways** — on an IaaS VM, on a container PaaS
 (Cloud Run), and as a serverless function (Cloud Functions) — and measure the trade-offs
 first-hand (image size, cold start, scaling, cost, effort).

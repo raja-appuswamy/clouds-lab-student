@@ -1,0 +1,4 @@
+# Phase 5. The autograder tests run against the in-memory fake_firestore (offline) and live-curl
+# your public chat URL, so they need nothing extra. Only run_phase5.py (real Firestore, in Cloud
+# Shell) needs the client. The chat image gets it via phase-5-firestore/Dockerfile.
+google-cloud-firestore>=2.13

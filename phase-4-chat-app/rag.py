@@ -4,7 +4,7 @@ The server (provided) queries BigQuery for the TF-IDF rows of the query's terms,
 ``rank_topk`` to pick the best documents and ``build_rag_prompt`` to prepend them to the
 user's message. Both are pure functions — offline unit tests cover them:
 
-    python -m pytest phase-5-chat-app/tests/test_units.py -p autograder.points -q
+    python -m pytest phase-4-chat-app/tests/test_units.py -p autograder.points -q
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ def rank_topk(tfidf_rows: list[tuple[str, int, float]], k: int = 3) -> list[int]
     over those terms, then return the ``k`` highest-scoring ``doc_id``s.
     """
     # TODO: sum tfidf per doc_id, sort by score descending (ties by doc_id), return top-k ids.
-    raise NotImplementedError("Phase 5: implement rank_topk()")
+    raise NotImplementedError("Phase 4: implement rank_topk()")
 
 
 def build_rag_prompt(query: str, context_texts: list[str]) -> str:
@@ -36,4 +36,4 @@ def build_rag_prompt(query: str, context_texts: list[str]) -> str:
     """
     # TODO: join context_texts with blank lines under a "Context:" header, then add
     #       "User: <query>" and a final "Assistant:" line.
-    raise NotImplementedError("Phase 5: implement build_rag_prompt()")
+    raise NotImplementedError("Phase 4: implement build_rag_prompt()")

@@ -1,8 +1,8 @@
 # Student-side autograding CI for Phase 5.
 #
-# Grades the RAG helpers offline (rag.py is pure Python) and live-curls your public Cloud Run
-# chat endpoint (recorded in submission/phase5_report.json). No GCP credentials, no heavy deps
-# — the server's runtime deps only matter inside the container, not here.
+# The unit tests run against the in-memory fake Firestore (offline); the live tests curl your
+# public chat service to prove the turns it stores in Firestore persist; the report checks read
+# submission/phase5_report.json — no GCP credentials, no google-cloud-firestore needed here.
 name: autograde-phase-5
 
 on:
@@ -30,9 +30,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run autograder tests (offline RAG units + live chat endpoint + report)
+      - name: Run autograder tests (fake-Firestore units + report)
         run: >
-          python -m pytest phase-5-chat-app/tests
+          python -m pytest phase-5-firestore/tests
           -p autograder.points
           --results-json results.json
           -q
