@@ -2,11 +2,12 @@
 
 Read [README.md](README.md) first. Two environments, in this order:
 
-- **Cloud Shell** (Tasks 1–6): code the MapReduce primitives, then run them **as a cloud
-  job** — every map and reduce task is a Cloud Run function invocation, Cloud Storage is the
-  shuffle, and Cloud Workflows is the job tracker.
-- **Colab** (Tasks 7–12): the Spark TF-IDF half, landing the table in Cloud Storage and
-  BigQuery, and the report.
+- **Cloud Shell** (Tasks 1–7): code the MapReduce primitives, run them **as a cloud job** —
+  every map and reduce task is a Cloud Run function invocation, Cloud Storage is the shuffle,
+  and Cloud Workflows is the job tracker — then code the Spark stages.
+- **Colab** (Tasks 8–13): run the Spark TF-IDF half, land the table in Cloud Storage and
+  BigQuery, and write the report. All coding is done before you open Colab; the notebook only
+  runs your code.
 
 > **How these task sheets work.** Each cloud task states an *objective*, names the module and
 > lecture where you were taught the commands, and says what the autograder checks.
@@ -38,7 +39,7 @@ Cloud Logging.
 ## Task 2 — Implement the MapReduce primitives and run the unit tests
 
 Fill the TODOs in [mapreduce.py](mapreduce.py) — `map_wc`, `shuffle`, `reduce_wc`. (The
-Spark stages come later, in Task 8, once the MapReduce job has run in the cloud.)
+Spark stages come later, in Task 7, once the MapReduce job has run in the cloud.)
 
 **Taught in.** Lecture 5 *MapReduce*
 
@@ -112,7 +113,7 @@ gcloud workflows deploy mr-wordcount --location=$REGION \
 ```
 
 Before you run it, read [workflow.yaml](workflow.yaml) top to bottom — it is short, and the
-writeup (Task 11) asks about it. Find the three things a job tracker does: the **fan-out**
+writeup (Task 12) asks about it. Find the three things a job tracker does: the **fan-out**
 (`parallel` + `for`), the **barrier** between the map and reduce phases (where is it? there is
 no explicit step), and the **fault tolerance** (`try` / `retry`). Note which HTTP statuses the
 retry predicate covers, and that the worker's simulated crash returns one of them.
@@ -148,45 +149,60 @@ find the matching `simulated worker crash` entries. Note the retry count for you
 **Taught in.** Core Services M4 *Resource Monitoring* (Cloud Logging) · Fundamentals M6
 
 **Verified by.** `submission/phase3_mapreduce.json` with `"matches_local": true`, a public
-`wordcount.json` in your bucket, and the CI checks in Task 12. Both files come from the *last*
+`wordcount.json` in your bucket, and the CI checks in Task 13. Both files come from the *last*
 run — a chaos run is fine as the one you submit, as long as it succeeded.
 
 **Quotas.** Each run is ~16 workflow HTTP calls (2,000/month free) and ~65 Cloud Storage writes
 (5,000/month free). A handful of runs is nothing; a loop of a hundred is not. Do not script it.
 
-**Commit and push** `submission/phase3_mapreduce.json` before Task 7 — the notebook reads it
+**Commit and push** `submission/phase3_mapreduce.json` before Task 8 — the notebook reads it
 from your clone.
 
 
 ---
 
-## Task 7 — Open the notebook in Colab
+## Task 7 — Implement the Spark stages
+
+Still in Cloud Shell. Fill the TODOs in [spark_tfidf.py](spark_tfidf.py) — `term_freq` and
+`doc_freq`, the two RDD stages (`flatMap` / `map` / `reduceByKey`). They reuse the same
+`tokenize` as your MapReduce, so both halves of the phase agree on what a term is. You do not
+need Spark installed to write them; the docstrings state the exact input and output shapes.
+
+There is no offline Spark test — the stages are graded on the output you produce in Task 9.
+**Commit and push** before going on: Colab will clone your repo, and it runs whatever is on
+`main`.
+
+**Taught in.** Lecture 6 *Spark*
+
+---
+
+## Task 8 — Open the notebook in Colab
 
 Upload [notebook.ipynb](notebook.ipynb) to <https://colab.research.google.com> (a CPU
 runtime is fine). Edit the `git clone` URL in the first cell to **your** repo. Run sections 0
 and 1: section 1 loads your `phase3_mapreduce.json` and runs the local reference next to it —
-read the elapsed times. Stop before section 2 until Task 8 is done.
+read the elapsed times.
+
+**If you later change code in Cloud Shell** (a Spark bug, say): commit, push, then in Colab
+**Runtime → Restart session** and run again from section 0. The clone cell pulls when the repo
+is already there, and the restart is needed because Python keeps already-imported modules in
+memory — re-running the cell alone would not pick up your fix.
 
 ---
 
-## Task 8 — Implement the Spark stages, then PySpark TF-IDF → Parquet
+## Task 9 — PySpark TF-IDF → Parquet
 
-Fill the TODOs in [spark_tfidf.py](spark_tfidf.py) — `term_freq` and `doc_freq`, the two RDD
-stages (`flatMap` / `map` / `reduceByKey`). They reuse the same `tokenize` as your MapReduce,
-so both halves of the phase agree on what a term is. Commit and push, then re-run the
-notebook's section 0 so Colab pulls your code.
-
-There is no offline Spark test — the stages are graded on the output you produce. Run the
-Spark cells: they build the `{term, doc_id, tf, df, idf, tfidf}` table via RDD transformations
-and write `tfidf.parquet`. Check the printed sample rows look right: `tf` and `df` are small
-integers, `idf` is `ln(60 / df)`, and a term appearing in every document has `idf = 0`.
+Run the Spark cells: they build the `{term, doc_id, tf, df, idf, tfidf}` table via RDD
+transformations and write `tfidf.parquet`. Check the printed sample rows look right: `tf` and
+`df` are small integers, `idf` is `ln(60 / df)`, and a term appearing in every document has
+`idf = 0`.
 
 **Taught in.** Lecture 6 *Spark* — watch which steps are transformations and which force an
-action; you need that distinction for Task 11.
+action; you need that distinction for Task 12.
 
 ---
 
-## Task 9 — Upload the Parquet to Cloud Storage (public)
+## Task 10 — Upload the Parquet to Cloud Storage (public)
 
 The notebook does this in Python, not `gcloud` — Colab is not logged into gcloud, so the cell
 authenticates with `google.colab.auth.authenticate_user()` and then uses the Cloud Storage
@@ -202,7 +218,7 @@ confirm it downloads in a browser.
 
 ---
 
-## Task 10 — Load into BigQuery and query
+## Task 11 — Load into BigQuery and query
 
 The notebook creates a dataset, loads the Parquet from GCS into a `tfidf` table, and runs a
 top-by-tfidf query. (If it errors, ensure `bigquery.googleapis.com` is enabled — Task 1.)
@@ -212,7 +228,7 @@ Services*
 
 ---
 
-## Task 11 — Write the comparison (writeup)
+## Task 12 — Write the comparison (writeup)
 
 Write `submission/phase3_comparison.md` (~1 page), answering:
 
@@ -230,7 +246,7 @@ Write `submission/phase3_comparison.md` (~1 page), answering:
 
 ---
 
-## Task 12 — Write the report, commit, push
+## Task 13 — Write the report, commit, push
 
 The last notebook cell writes `submission/phase3_report.json`. Commit your `mapreduce.py`,
 `spark_tfidf.py`, `submission/phase3_mapreduce.json`, `submission/phase3_report.json`, and
@@ -243,7 +259,7 @@ python -m pytest phase-3-mapreduce-spark/tests -p autograder.points -q   # full 
 
 ---
 
-## Task 13 — Tear down (after your grade is in)
+## Task 14 — Tear down (after your grade is in)
 
 Nothing here costs money while idle — the function scales to zero, an idle workflow is free,
 and the bucket is a few MB. Still, once graded: delete the **workflow**, the **function** (which
@@ -265,7 +281,7 @@ shows €0.00 for the month, as in Phase 1.
 3. The completed **Colab notebook** (with outputs).
 4. `submission/phase3_report.json`, a **public** `wordcount.json` and `tfidf.parquet` in Cloud
    Storage, and the `tfidf` table in BigQuery.
-5. `submission/phase3_comparison.md` — the writeup (Task 11).
+5. `submission/phase3_comparison.md` — the writeup (Task 12).
 6. A **green** `autograde-phase-3` CI run.
 
 ## How your work is checked
