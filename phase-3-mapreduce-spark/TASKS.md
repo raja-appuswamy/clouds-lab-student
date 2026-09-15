@@ -168,6 +168,12 @@ Still in Cloud Shell. Fill the TODOs in [spark_tfidf.py](spark_tfidf.py) — `te
 `tokenize` as your MapReduce, so both halves of the phase agree on what a term is. You do not
 need Spark installed to write them; the docstrings state the exact input and output shapes.
 
+One Python trap worth knowing before you write a `flatMap`: in
+`flatMap(lambda doc: X for term in ...)` the `for` binds to the *argument*, not the lambda —
+Python reads it as a generator whose element is a lambda, evaluates the iterable eagerly, and
+fails with `NameError: name 'doc' is not defined`. Give the lambda's body its own brackets:
+`lambda doc: [X for term in ...]`.
+
 There is no offline Spark test — the stages are graded on the output you produce in Task 9.
 **Commit and push** before going on: Colab will clone your repo, and it runs whatever is on
 `main`.
