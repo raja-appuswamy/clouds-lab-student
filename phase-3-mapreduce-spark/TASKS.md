@@ -35,13 +35,12 @@ Cloud Logging.
 
 ---
 
-## Task 2 — Implement the code and run the unit tests
+## Task 2 — Implement the MapReduce primitives and run the unit tests
 
-Fill the TODOs:
-- [mapreduce.py](mapreduce.py) — `map_wc`, `shuffle`, `reduce_wc` (the MapReduce primitives).
-- [spark_tfidf.py](spark_tfidf.py) — `term_freq`, `doc_freq` (the two RDD stages).
+Fill the TODOs in [mapreduce.py](mapreduce.py) — `map_wc`, `shuffle`, `reduce_wc`. (The
+Spark stages come later, in Task 8, once the MapReduce job has run in the cloud.)
 
-**Taught in.** Lecture 5 *MapReduce* · Lecture 6 *Spark*
+**Taught in.** Lecture 5 *MapReduce*
 
 Then read — do not edit — the three provided files that turn your primitives into a cloud job,
 because Tasks 3–6 deploy them and the writeup asks about them:
@@ -58,9 +57,6 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt -r phase-3-mapreduce-spark/requirements.txt
 python -m pytest phase-3-mapreduce-spark/tests/test_units.py -p autograder.points -q
 ```
-
-The **Spark** stages are graded on the output you produce (there's no offline Spark test);
-you'll verify them by running the notebook and checking the TF-IDF table.
 
 ---
 
@@ -89,8 +85,7 @@ only caller is the workflow, so the only invoker is its service account.
 **Objective.** A **2nd-gen** (Cloud Run) Python function named **`mr-worker`**, entry point
 `mr_worker`, deployed from source `phase-3-mapreduce-spark/`, running as `mr-runner`, in the
 same region as your Phase 1 deployments (`us-central1`) — you will reuse it for the workflow.
-It must **not** be publicly invokable — the flag you added in Phase 1 is exactly the one to
-leave out.
+It must **not** be publicly invokable — the flag you added in Phase 1 is exactly the one to leave out. Use a timeout of 300s to ensure `mr-worker` can only run up to 5 minutes.
 
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · Phase 1 Task 7
 
@@ -168,15 +163,23 @@ from your clone.
 ## Task 7 — Open the notebook in Colab
 
 Upload [notebook.ipynb](notebook.ipynb) to <https://colab.research.google.com> (a CPU
-runtime is fine). Edit the `git clone` URL in the first cell to **your** repo. Section 1 loads
-your `phase3_mapreduce.json` and runs the local reference next to it — read the elapsed times.
+runtime is fine). Edit the `git clone` URL in the first cell to **your** repo. Run sections 0
+and 1: section 1 loads your `phase3_mapreduce.json` and runs the local reference next to it —
+read the elapsed times. Stop before section 2 until Task 8 is done.
 
 ---
 
-## Task 8 — PySpark TF-IDF → Parquet
+## Task 8 — Implement the Spark stages, then PySpark TF-IDF → Parquet
 
-Run the Spark cells: they build the `{term, doc_id, tf, df, idf, tfidf}` table via RDD
-transformations and write `tfidf.parquet`. Check the printed sample rows look right.
+Fill the TODOs in [spark_tfidf.py](spark_tfidf.py) — `term_freq` and `doc_freq`, the two RDD
+stages (`flatMap` / `map` / `reduceByKey`). They reuse the same `tokenize` as your MapReduce,
+so both halves of the phase agree on what a term is. Commit and push, then re-run the
+notebook's section 0 so Colab pulls your code.
+
+There is no offline Spark test — the stages are graded on the output you produce. Run the
+Spark cells: they build the `{term, doc_id, tf, df, idf, tfidf}` table via RDD transformations
+and write `tfidf.parquet`. Check the printed sample rows look right: `tf` and `df` are small
+integers, `idf` is `ln(60 / df)`, and a term appearing in every document has `idf = 0`.
 
 **Taught in.** Lecture 6 *Spark* — watch which steps are transformations and which force an
 action; you need that distinction for Task 11.
