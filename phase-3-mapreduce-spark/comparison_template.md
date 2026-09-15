@@ -12,11 +12,7 @@ grader finds your answers. Anything you write outside the markers is ignored, so
 prose, tables or images freely.
 
 Numbers in section 1 must **match `submission/phase3_report.json`** — copy them across, do not
-retype from memory. Check yourself before you push:
-
-```bash
-python phase-3-mapreduce-spark/report_md.py submission/phase3_comparison.md submission/phase3_report.json
-```
+retype from memory; they are checked against it.
 
 ---
 

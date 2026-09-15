@@ -239,12 +239,9 @@ write outside them is ignored, so add extra prose, tables or images freely.
 Your latency figures must **match `submission/phase1_report.json`**. Copy them across rather
 than retyping from memory; they are checked against what `measure.py` actually recorded.
 
-Check your own report before you submit — it reports every slot that is missing, unfilled,
-too short, or inconsistent with your measurements:
+Every slot is read and checked when your work is graded — fill them all, and keep the numbers
+consistent with `phase1_report.json`.
 
-```bash
-python phase-1-echo-bot/report_md.py submission/phase1_report.md submission/phase1_report.json
-```
 
 ---
 

@@ -266,16 +266,13 @@ JobTracker, workers, HDFS, Partitioner, where the barrier is, why idempotence ma
 policy safe, what the chaos run showed; **three runtimes, one job** — explain the timings and
 estimate the break-even corpus size; and **object storage vs HDFS**.
 
-Check it before you push — the same check runs in CI (it gates completeness, not quality):
-
-```bash
-python phase-3-mapreduce-spark/report_md.py submission/phase3_comparison.md submission/phase3_report.json
-```
+Every slot is read and checked when your work is graded — fill them all, keep the numbers
+honest, and answer the question that is asked.
 
 Then commit your `mapreduce.py`, `spark_tfidf.py`, `submission/phase3_mapreduce.json`,
 `submission/phase3_report.json` and `submission/phase3_comparison.md`, and push. The
 **`autograde-phase-3`** workflow runs the unit tests, fetches your public `wordcount.json` and
-Parquet, checks the report, and runs the writeup check above.
+Parquet, and checks the report.
 
 ```bash
 python -m pytest phase-3-mapreduce-spark/tests -p autograder.points -q   # full public suite

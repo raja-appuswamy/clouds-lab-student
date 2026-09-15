@@ -12,4 +12,3 @@ run_mr.py
 corpus.py
 spark_tfidf.py
 report.py
-report_md.py

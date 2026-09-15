@@ -130,16 +130,3 @@ def test_chaos_fails_before_doing_work(monkeypatch):
     body, status = main.handle({"task": "map", "chaos": 1.0, "bucket": "b", "job": "j",
                                 "split": 0, "num_reducers": 1})
     assert status == 503 and not called
-
-
-def test_comparison_template_matches_checker():
-    """Not graded — guards the instructor's template: every slot the checker expects exists
-    in comparison_template.md and vice versa (parsed, not grepped — the how-to line quotes the
-    marker syntax and must not count)."""
-    from pathlib import Path
-
-    import report_md
-    from autograder.report_md import parse
-
-    tpl = (Path(__file__).resolve().parents[1] / "comparison_template.md").read_text(encoding="utf-8")
-    assert set(parse(tpl)) == {s.name for s in report_md.SLOTS}
