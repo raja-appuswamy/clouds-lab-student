@@ -113,7 +113,7 @@ gcloud workflows deploy mr-wordcount --location=$REGION \
 ```
 
 Before you run it, read [workflow.yaml](workflow.yaml) top to bottom — it is short, and the
-writeup (Task 12) asks about it. Find the three things a job tracker does: the **fan-out**
+writeup (Task 13) asks about it. Find the three things a job tracker does: the **fan-out**
 (`parallel` + `for`), the **barrier** between the map and reduce phases (where is it? there is
 no explicit step), and the **fault tolerance** (`try` / `retry`). Note which HTTP statuses the
 retry predicate covers, and that the worker's simulated crash returns one of them.
@@ -210,7 +210,7 @@ a per-stage table of shuffle bytes, and the real **Spark UI** proxied into a bro
 open *Jobs → DAG Visualization* once and match it against the lineage you printed in 2b.
 
 **Taught in.** Lecture 6 *Spark* — transformations vs actions, stages, lineage. The writeup
-(Task 12) asks you to read the stage count and the recovery point off these outputs.
+(Task 13) asks you to read the stage count and the recovery point off these outputs.
 
 ---
 
@@ -240,34 +240,47 @@ Services*
 
 ---
 
-## Task 12 — Write the comparison (writeup)
+## Task 12 — Write the report
 
-Write `submission/phase3_comparison.md` (~1 page), answering:
-
-1. **Spark.** Which steps in `spark_tfidf.py` are **transformations** and which are
-   **actions**? Where does **lineage** let Spark recover a lost partition without recomputing
-   everything?
-2. **Your cloud MapReduce.** Map the pieces onto Hadoop: what played the *JobTracker*, the
-   *workers*, *HDFS*, the *Partitioner*? Where exactly is the barrier between the map and
-   reduce phases in `workflow.yaml`? Why must a map task be **idempotent** for the retry policy
-   to be safe — what would go wrong if it appended instead of overwriting? What did the chaos
-   run show?
-3. **Three runtimes, one job.** Compare wall time for the local reference, the cloud
-   MapReduce, and local Spark. Explain the differences, and estimate the corpus size at which
-   the cloud job would break even.
+Run the notebook's last section: it writes `submission/phase3_report.json` — the cloud MapReduce
+record, your local and Spark timings, the Parquet URL and row count, and the BigQuery result.
+A `NameError` here names the section you skipped. Download the file from Colab (or commit it
+from there) into `submission/` in your repo; the writeup quotes numbers from it.
 
 ---
 
-## Task 13 — Write the report, commit, push
+## Task 13 — Write the comparison, commit, push
 
-The last notebook cell writes `submission/phase3_report.json`. Commit your `mapreduce.py`,
-`spark_tfidf.py`, `submission/phase3_mapreduce.json`, `submission/phase3_report.json`, and
-`submission/phase3_comparison.md`, then push. The **`autograde-phase-3`** workflow runs the
-unit tests, fetches your public `wordcount.json` and Parquet, and checks the report.
+Start from the template:
+
+```bash
+cp phase-3-mapreduce-spark/comparison_template.md submission/phase3_comparison.md
+```
+
+Fill in every answer slot — leave the `<!--answer:...-->` markers in place, they are how the
+grader finds your answers. The template asks, in order: the **facts** from your runs (task
+counts, the three wall times, the stage count, the retries you saw — the numbers must match
+`phase3_report.json`); **Spark** — transformations vs actions, and where lineage lets a lost
+partition be recovered, read off notebook 2b/3a; **your cloud MapReduce mapped onto Hadoop** —
+JobTracker, workers, HDFS, Partitioner, where the barrier is, why idempotence makes the retry
+policy safe, what the chaos run showed; **three runtimes, one job** — explain the timings and
+estimate the break-even corpus size; and **object storage vs HDFS**.
+
+Check it before you push — the same check runs in CI (it gates completeness, not quality):
+
+```bash
+python phase-3-mapreduce-spark/report_md.py submission/phase3_comparison.md submission/phase3_report.json
+```
+
+Then commit your `mapreduce.py`, `spark_tfidf.py`, `submission/phase3_mapreduce.json`,
+`submission/phase3_report.json` and `submission/phase3_comparison.md`, and push. The
+**`autograde-phase-3`** workflow runs the unit tests, fetches your public `wordcount.json` and
+Parquet, checks the report, and runs the writeup check above.
 
 ```bash
 python -m pytest phase-3-mapreduce-spark/tests -p autograder.points -q   # full public suite
 ```
+
 
 ---
 
@@ -293,7 +306,7 @@ shows €0.00 for the month, as in Phase 1.
 3. The completed **Colab notebook** (with outputs).
 4. `submission/phase3_report.json`, a **public** `wordcount.json` and `tfidf.parquet` in Cloud
    Storage, and the `tfidf` table in BigQuery.
-5. `submission/phase3_comparison.md` — the writeup (Task 12).
+5. `submission/phase3_comparison.md` — the filled-in writeup template (Task 13).
 6. A **green** `autograde-phase-3` CI run.
 
 ## How your work is checked
