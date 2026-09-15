@@ -92,11 +92,14 @@ TODO
 
 ---
 
-## 4. Three runtimes, one job
+## 4. Three runtimes, one corpus
 
-**Explain the timings.** Section 1 has three wall times for the same word count: local
-single-process, cloud MapReduce, and local Spark. Rank them and explain *why* each is where it
-is — what is each one spending its time on? (~90 words)
+**Explain the timings.** Section 1 has three wall times over the same 60 documents. Two are
+the *same job* — the word count, run single-process and as the cloud MapReduce — and the
+third is *more work*: Spark's TF-IDF (two `reduceByKey`s and a `join`), run locally. Rank
+them and explain *why* each is where it is — what is each one spending its time on? Be
+explicit about which comparison is like-for-like and which is not, and what that tells you
+about where the cloud job's time actually goes. (~90 words)
 
 <!--answer:three_runtimes-->
 TODO

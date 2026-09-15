@@ -263,8 +263,9 @@ counts, the three wall times, the stage count, the retries you saw — the numbe
 `phase3_report.json`); **Spark** — transformations vs actions, and where lineage lets a lost
 partition be recovered, read off notebook 2b/3a; **your cloud MapReduce mapped onto Hadoop** —
 JobTracker, workers, HDFS, Partitioner, where the barrier is, why idempotence makes the retry
-policy safe, what the chaos run showed; **three runtimes, one job** — explain the timings and
-estimate the break-even corpus size; and **object storage vs HDFS**.
+policy safe, what the chaos run showed; **three runtimes, one corpus** — explain the timings
+(word count vs cloud word count is like-for-like; Spark's TF-IDF is more work) and estimate the
+break-even corpus size; and **object storage vs HDFS**.
 
 Every slot is read and checked when your work is graded — fill them all, keep the numbers
 honest, and answer the question that is asked.
