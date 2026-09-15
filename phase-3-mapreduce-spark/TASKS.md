@@ -196,15 +196,21 @@ memory — re-running the cell alone would not pick up your fix.
 
 ---
 
-## Task 9 — PySpark TF-IDF → Parquet
+## Task 9 — PySpark TF-IDF → Parquet, and look inside the job
 
-Run the Spark cells: they build the `{term, doc_id, tf, df, idf, tfidf}` table via RDD
-transformations and write `tfidf.parquet`. Check the printed sample rows look right: `tf` and
-`df` are small integers, `idf` is `ln(60 / df)`, and a term appearing in every document has
-`idf = 0`.
+Run notebook sections 2 and 3. Section 2 deliberately splits the pipeline in two: **2b** builds
+the RDD and prints its **lineage** (`toDebugString`) *before anything runs* — count the shuffle
+boundaries, that is the number of stages — and **2c** runs the one action, `collect`. Check the
+printed sample rows look right: `tf` and `df` are small integers, `idf` is `ln(60 / df)`, and a
+term appearing in every document has `idf = 0`.
 
-**Taught in.** Lecture 6 *Spark* — watch which steps are transformations and which force an
-action; you need that distinction for Task 12.
+Section 3 is the Spark counterpart of the Workflows execution view you watched in Task 6: a
+**task timeline** drawn from Spark's REST API (bands of parallel tasks, gaps at each shuffle),
+a per-stage table of shuffle bytes, and the real **Spark UI** proxied into a browser tab —
+open *Jobs → DAG Visualization* once and match it against the lineage you printed in 2b.
+
+**Taught in.** Lecture 6 *Spark* — transformations vs actions, stages, lineage. The writeup
+(Task 12) asks you to read the stage count and the recovery point off these outputs.
 
 ---
 

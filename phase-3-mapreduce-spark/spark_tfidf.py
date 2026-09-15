@@ -2,7 +2,7 @@
 
 You implement the two key RDD stages — per-document **term frequency** and per-term
 **document frequency** — using Spark transformations (`flatMap`, `map`, `reduceByKey`).
-`build_tfidf_rows` (provided) joins them and emits the final TF-IDF table.
+`build_tfidf_rdd` (provided) joins them into the TF-IDF rows; `build_tfidf_rows` collects.
 
 Definitions (keep them exactly, so your output matches the grader):
     tf(t, d)  = raw count of term t in document d
@@ -41,11 +41,11 @@ def doc_freq(tf_rdd):
     raise NotImplementedError("Phase 3: implement doc_freq()")
 
 
-def build_tfidf_rows(docs_rdd, num_docs: int) -> list[dict]:
-    """Join TF and DF and emit TF-IDF rows (provided).
+def build_tfidf_rdd(docs_rdd, num_docs: int):
+    """Join TF and DF into an RDD of TF-IDF rows (provided) — transformations only.
 
-    Returns a list of ``{term, doc_id, tf, df, idf, tfidf}`` dicts (an ``action`` —
-    ``collect`` — triggers the whole lazy lineage).
+    Nothing runs here: this just builds the lineage. Print ``rdd.toDebugString()`` to see
+    it — every indentation step is a shuffle boundary, i.e. a new stage.
     """
     tf = term_freq(docs_rdd)                       # ((term, doc_id), tf)
     df = doc_freq(tf)                              # (term, df)
@@ -58,7 +58,12 @@ def build_tfidf_rows(docs_rdd, num_docs: int) -> list[dict]:
         return {"term": term, "doc_id": doc_id, "tf": tf_val,
                 "df": df_val, "idf": idf, "tfidf": tf_val * idf}
 
-    return joined.map(to_row).collect()
+    return joined.map(to_row)
+
+
+def build_tfidf_rows(docs_rdd, num_docs: int) -> list[dict]:
+    """The same pipeline, run: ``collect`` is the one **action** that triggers it all (provided)."""
+    return build_tfidf_rdd(docs_rdd, num_docs).collect()
 
 
 def save_parquet(rows: list[dict], path: str) -> str:

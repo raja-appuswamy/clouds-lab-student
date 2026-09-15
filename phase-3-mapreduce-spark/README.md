@@ -29,8 +29,10 @@ then **Google Colab** for the Spark half (a CPU runtime is fine — Spark runs l
 2. **PySpark TF-IDF** (`spark_tfidf.py`) — you implement the two key RDD stages (per-document
    term frequency, per-term document frequency) with `flatMap`/`map`/`reduceByKey`; the
    provided code joins them into a `{term, doc_id, tf, df, idf, tfidf}` table.
-3. A Colab notebook picks up the MapReduce result, runs the Spark half, writes the TF-IDF
-   table to **Parquet**, uploads it to **Cloud Storage** (public), and loads it into
+3. A Colab notebook picks up the MapReduce result, runs the Spark half — printing the RDD
+   **lineage** before the action and drawing the job's **task timeline** (stages, shuffles)
+   from Spark's REST API afterwards, with the Spark UI one click away — then writes the
+   TF-IDF table to **Parquet**, uploads it to **Cloud Storage** (public), and loads it into
    **BigQuery** for retrieval queries.
 
 TF-IDF definitions used throughout (keep them so your output matches the grader):
