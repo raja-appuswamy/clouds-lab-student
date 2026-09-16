@@ -49,7 +49,7 @@ else assumes.
 | **4 — The chat app** (Week 6) | A FastAPI server on Cloud Run that retrieves (Phase 3) → generates (Phase 2) → keeps the conversation *in the container's memory*, plus the browser UI on Cloud Storage. Ends with an experiment: force a fresh container and watch the history vanish | **A public chat URL** — the working product, minus a memory | Phase 5 redeploys it with a real store; Phase 7 demos it |
 | **5 — Remember conversations** (Week 7) | The Firestore schema `sessions/{id}/messages` and a **transactional** `send_message` that cannot lose updates; the same chat server redeployed with Firestore as its store — and the Phase-4 experiment repeated, with the opposite result | The **`firestore_store`** module and the schema, and a chat app that remembers | Phase 6 runs its anomalies, 2PC and Raft over the schema |
 | **6 — Make it correct** (Weeks 8–9) | Two-phase commit across Firestore and BigQuery; a toy Raft with leader election and log replication; reproductions of the consistency anomalies they prevent | A distributed-correctness report; an audit log in BigQuery | Phase 7 |
-| **7 — Capstone** (Week 10) | Bring the entire stack up from zero, load-test it, write the post-mortem, demo it | — | — |
+| **7 — Capstone** (Weeks 10–11) | The whole stack **as Terraform** — service, identity, data plane, alert, log sink — applied from zero; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell) with a rolling update; a costed GKE-vs-Cloud-Run comparison; `terraform destroy`, proven | The post-mortem and the demo | — |
 
 Two things follow from the table that are easy to miss when you are inside one phase:
 
@@ -86,14 +86,16 @@ bottom up:
    here is what fills that hole, and it is the reason the chat history becomes trustworthy.
 6. **What breaks when machines fail** (Lectures 9–11 → Phase 6). Consistency models, 2PC's
    blocking problem, Raft's split-brain prevention — implemented, then broken on purpose.
-7. **Operating it** (Phase 7).
+7. **Operating it** (Phase 7). Everything you clicked or typed in Phases 4–5 becomes code you
+   can apply and destroy; the elasticity Lecture 1 promised becomes a number from Cloud
+   Monitoring; and Kubernetes shows you what Cloud Run had been deciding on your behalf.
 
 ---
 
 ## Two environments, one repo
 
 - **Google Cloud Shell** is where you deploy and run cloud things: Phases 0, 1, 3 (MapReduce
-  half), 4, 5, 6. It has `gcloud`, Docker, git and Python preinstalled and is free.
+  half), 4, 5, 6, 7 (including a Kubernetes cluster that runs *inside* Cloud Shell). It has `gcloud`, Docker, git and Python preinstalled and is free.
 - **Google Colab** is where heavy compute happens: Phase 2 (GPU training) and the Spark half of
   Phase 3. There is no free GPU on GCP; Colab's is.
 

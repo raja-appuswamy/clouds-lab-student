@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and edit.
+project     = "my-project-id"
+image       = "us-central1-docker.pkg.dev/my-project-id/eurecomgpt/chat:v2"
+alert_email = "you@eurecom.fr"

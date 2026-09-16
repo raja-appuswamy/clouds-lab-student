@@ -1,0 +1,46 @@
+# Student-side autograding CI for Phase 7.
+#
+# The offline tests parse terraform/*.tf and k8s/deployment.yaml (python-hcl2 + PyYAML — no
+# terraform or kubectl binary, no GCP credentials). The live tests curl the Terraform-managed
+# service while it exists and skip once your report records the destroy. The report tests read
+# submission/phase7_report.json, built stage by stage by make_report.py.
+name: autograde-phase-7
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+# Cancel a superseded run when you push again — the latest push is what gets graded.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submission
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt python-hcl2 pyyaml
+
+      - name: Run autograder tests (Terraform + k8s static checks, live service, report)
+        run: >
+          python -m pytest phase-7-capstone/tests
+          -p autograder.points
+          --results-json results.json
+          -q
+
+      - name: Upload score artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-7-score
+          path: results.json

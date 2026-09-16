@@ -1,0 +1,5 @@
+# Phase 7. The autograder tests parse your Terraform and Kubernetes files statically:
+python-hcl2>=4.3
+pyyaml>=6
+# loadtest.py (Cloud Shell) asks Cloud Monitoring for the instance count; the tests do not need it:
+google-cloud-monitoring>=2.19
