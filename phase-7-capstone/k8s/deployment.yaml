@@ -6,7 +6,7 @@
 # cannot pull from Artifact Registry, hence imagePullPolicy: IfNotPresent.
 #
 # STORE_BACKEND is memory on purpose: pods in kind have no Google identity, so Firestore (and
-# BigQuery, so /chat) are unreachable from here. /healthz and /sessions work — and with two
+# BigQuery, so /chat) are unreachable from here. /health and /sessions work — and with two
 # replicas behind one Service you will see Phase 4's lesson again: history written on one pod
 # is unknown to the other. On GKE, Workload Identity would give the pods an identity.
 apiVersion: apps/v1
@@ -38,6 +38,6 @@ spec:
               value: https://storage.googleapis.com/PROJECT_PLACEHOLDER-eurecomgpt/model.safetensors
             - name: BQ_TABLE
               value: unused.in.kind
-          # TODO: a readinessProbe (httpGet /healthz on 8080) so the Service only routes to pods
+          # TODO: a readinessProbe (httpGet /health on 8080) so the Service only routes to pods
           #       that answer, and resources (requests: 256Mi / 100m, limits: 512Mi) so two pods
           #       fit in Cloud Shell's memory.

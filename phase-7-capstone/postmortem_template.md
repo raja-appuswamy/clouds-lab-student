@@ -88,7 +88,7 @@ and `service.yaml` that Cloud Run decided for you in Phases 4-5. (~50 words)
 TODO
 <!--/answer-->
 
-**Why `/chat` failed in kind.** `/healthz` and `/sessions` worked in your kind cluster; `/chat`
+**Why `/chat` failed in kind.** `/health` and `/sessions` worked in your kind cluster; `/chat`
 did not. Explain exactly why, in terms of identity, and name the GKE feature that would fix it
 in production. (~50 words)
 

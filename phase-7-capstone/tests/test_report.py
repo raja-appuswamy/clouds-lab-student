@@ -19,8 +19,8 @@ def test_terraform_apply_recorded(report):
     missing = REQUIRED_TYPES - set(tf.get("resources_by_type", {}))
     assert not missing, f"state is missing resource types: {sorted(missing)}"
     assert ".run.app" in tf.get("outputs", {}).get("chat_url", ""), "no chat_url output recorded"
-    assert tf.get("healthz", {}).get("status") == 200 and tf["healthz"].get("store") == "firestore", (
-        "right after apply, /healthz should answer 200 with store=firestore")
+    assert tf.get("health", {}).get("status") == 200 and tf["health"].get("store") == "firestore", (
+        "right after apply, /health should answer 200 with store=firestore")
 
 
 @points(15)

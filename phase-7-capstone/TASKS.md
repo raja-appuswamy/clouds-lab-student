@@ -85,7 +85,7 @@ the plan wants to destroy something, stop: you are pointed at the wrong project.
 
 ## Task 4 — Apply: the stack, from zero
 
-**Objective.** The plan applied. Terraform prints the outputs; `chat_url` answers `/healthz`
+**Objective.** The plan applied. Terraform prints the outputs; `chat_url` answers `/health`
 with `"store": "firestore"` and `/chat` returns a reply — a service you did not create by hand,
 running your Phase-5 image, reading a table this apply just loaded.
 
@@ -189,7 +189,7 @@ Fill the TODOs in [k8s/deployment.yaml](k8s/deployment.yaml) (`replicas`, `readi
 [k8s/service.yaml](k8s/service.yaml) is complete.
 
 **Objective.** The Deployment and Service applied; both pods `Ready`; `curl
-localhost:30080/healthz` answers — and, called a few times, shows **two different `instance`
+localhost:30080/health` answers — and, called a few times, shows **two different `instance`
 ids**: the Service is balancing across your pods. Then perform a **rolling update** (change any
 environment variable on the Deployment) and watch it: old pods drain as new ones become ready,
 and the Deployment's revision becomes 2.

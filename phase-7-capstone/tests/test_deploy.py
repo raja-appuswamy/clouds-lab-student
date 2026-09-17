@@ -38,8 +38,8 @@ def _skip_if_destroyed(report):
 @points(5)
 def test_terraform_service_is_up_on_firestore(report):
     _skip_if_destroyed(report)
-    status, body = _get_json(report.get("chat_url", "").rstrip("/") + "/healthz")
-    assert status == 200, f"/healthz on the Terraform-managed service returned {status}"
+    status, body = _get_json(report.get("chat_url", "").rstrip("/") + "/health")
+    assert status == 200, f"/health on the Terraform-managed service returned {status}"
     assert body.get("store") == "firestore", f"service reports store={body.get('store')!r}; the env in main.tf is wrong"
 
 

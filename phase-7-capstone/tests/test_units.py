@@ -87,7 +87,7 @@ def test_deployment_manifest(deployment):
     spec = deployment["spec"]
     assert spec.get("replicas", 1) >= 2, "replicas must be >= 2 so the Service has pods to balance across"
     c = spec["template"]["spec"]["containers"][0]
-    assert c.get("readinessProbe", {}).get("httpGet", {}).get("path") == "/healthz", "readinessProbe should GET /healthz"
+    assert c.get("readinessProbe", {}).get("httpGet", {}).get("path") == "/health", "readinessProbe should GET /health"
     res = c.get("resources", {})
     assert res.get("requests", {}).get("memory") and res.get("limits", {}).get("memory"), (
         "declare memory requests and limits — two pods must fit in Cloud Shell")

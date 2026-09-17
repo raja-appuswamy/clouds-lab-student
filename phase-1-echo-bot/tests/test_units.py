@@ -36,8 +36,8 @@ def _client():
 
 
 @points(5)
-def test_healthz():
-    resp = _client().get("/healthz")
+def test_health():
+    resp = _client().get("/health")
     assert resp.status_code == 200
     assert resp.get_data(as_text=True) == "ok"
 

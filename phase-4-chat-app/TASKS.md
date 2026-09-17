@@ -8,7 +8,7 @@ Phase-2 public model URL and your Phase-3 BigQuery table already in place.
 > **The `gcloud` commands are not given** — you have already performed these operations in the
 > Google Cloud modules listed under each task, and recalling them is the point of the
 > exercise. Code, tests and provided scripts are given in full; only cloud operations are
-> withheld.
+> withheld. The one exception is Task 5 (the custom IAM role), marked *(commands given)*.
 >
 > **When you are stuck**, in this order: revisit the module named under the task; then
 > `gcloud <group> --help` (e.g. `gcloud run --help`); then the CLI reference at
@@ -61,7 +61,7 @@ trace instead of a Cloud Run 500:
 
 ```bash
 MODEL_URL=$MODEL_URL BQ_TABLE=$BQ_TABLE uvicorn --app-dir phase-4-chat-app server:app --port 8080
-curl -s localhost:8080/healthz
+curl -s localhost:8080/health
 ```
 
 (`/chat` works locally too — Cloud Shell's own credentials reach BigQuery.)
@@ -116,22 +116,35 @@ Note the `"store": "memory"` and `"instance": "..."` fields in the reply — you
 
 ---
 
-## Task 5 — Tighten it with a custom least-privilege role
+## Task 5 — Tighten it with a custom least-privilege role *(commands given)*
 
 `roles/bigquery.dataViewer` is far broader than this service needs — it can read every table
-in the project. Replace it with a role that grants only what the chat server actually uses.
+in the project. Replace it with a role that grants only what the chat server actually uses:
+`bigquery.tables.get` and `bigquery.tables.getData`. The app does not need this step to work;
+it is here because least privilege is the one IAM habit worth practising by hand, and Phase 7
+turns the same role into Terraform.
 
-**Objective.** A **custom IAM role** in your project (suggested id `chatBigQueryReader`)
-granting exactly `bigquery.tables.get` and `bigquery.tables.getData`, bound to the Cloud Run
-service account **in place of** `roles/bigquery.dataViewer` — with `/chat` still answering
-afterwards.
+**Objective.** A **custom IAM role** `chatBigQueryReader` with exactly those two permissions,
+bound to the Cloud Run service account **in place of** `roles/bigquery.dataViewer` — with
+`/chat` still answering afterwards. `CR_SA` is the service account you found in Task 4.
+
+```bash
+gcloud iam roles create chatBigQueryReader --project=$PROJECT     --title="Chat BigQuery Reader"     --permissions=bigquery.tables.get,bigquery.tables.getData     --stage=GA
+gcloud projects add-iam-policy-binding $PROJECT     --member="serviceAccount:$CR_SA" --role="projects/$PROJECT/roles/chatBigQueryReader"
+gcloud projects remove-iam-policy-binding $PROJECT     --member="serviceAccount:$CR_SA" --role="roles/bigquery.dataViewer"
+# IAM changes take a few seconds to propagate; then confirm the service still answers
+curl -s -X POST $CHAT_URL/chat -H 'Content-Type: application/json'      -d '{"session_id":"cli","message":"love and the king"}'
+```
+
+Read the three commands before running them: *create* the role, *add* the new binding, *remove*
+the old one — in that order, so the service is never without a role that lets it read. Try the
+`curl` in between the last two if you want to see that the custom role alone is sufficient.
 
 **Taught in.** Core Services M1 *Identity and Access Management*
 
-**Verified by.** Not autograded — but if you over-tighten it, the live-curl test in Task 9
-fails, so re-run the `curl` from Task 4 before you move on. Record the role id and its
-permissions in your demo notes.
-
+**Verified by.** Not autograded — but if the role were missing a permission, the live-curl test
+in Task 9 would fail, so the `curl` above is the check. Before moving on, be able to say in one
+sentence what `roles/bigquery.dataViewer` would have allowed that this role does not.
 
 ---
 
@@ -145,8 +158,20 @@ public from Phases 2–3.
 
 **Verified by.** The UI URL you record in your report.
 
-Open it, paste your `$CHAT_URL` into the field, and chat. Then press **Load history** — the
-server reads your session back. Keep the tab open for Task 8.
+Then use it — the page is static and does not know where your service is, so **you must tell
+it**:
+
+1. Print your service URL in Cloud Shell: `echo $CHAT_URL` (from Task 4).
+2. Open the UI URL in a browser. Paste `$CHAT_URL` into the **first field** — the one with the
+   placeholder *Cloud Run URL, e.g. https://chat-xxx.run.app*. The page remembers it.
+3. Type a message and press **Send**. The reply's footer shows `store: memory` and the
+   `instance` id that answered.
+4. Press **Load history** — the server reads your session back.
+
+If *Send* answers "No API URL set", step 2 was skipped. If it answers "Failed to fetch", open
+the browser console (F12): a CORS error means the deployed image predates the current
+`server.py`; a 500 means the service account is missing a BigQuery role (Task 4). Keep the tab
+open for Task 8.
 
 
 ---
@@ -168,26 +193,48 @@ not commit yet — Task 8 adds to it.
 ## Task 8 — Watch it forget
 
 **Objective.** Force Cloud Run to replace the container that answered Task 7 with a **fresh
-instance** — then ask the new one for the same session.
+instance** — then ask the new one for the same session, and see that it has never heard of it.
 
-The reliable way is to deploy a **new revision** of the service (any change will do, e.g.
-setting a throwaway environment variable). Cloud Run starts fresh containers for the new
-revision and drains the old ones. Waiting for the service to scale to zero (about 15 minutes
-idle) achieves the same thing, more slowly.
+**How to tell containers apart.** Every reply from the server — `/chat`, `/health`, the
+history — carries an `instance` field: an 8-character id such as `a781c7f8`, minted when that
+container's process started. Same container → same id on every reply. New container → new id.
+You can see it in three places:
+
+- in the **UI**: each reply's grey footer line ends with `instance: …`, and *Load history* prints
+  `… · instance: …` under the messages;
+- from **Cloud Shell**: `curl -s $CHAT_URL/health` prints it;
+- in the **report** written by `make_report.py`.
+
+**Before you change anything**, note the id you are currently talking to: press *Load history*
+in the Task 6 tab (or run the `curl`). Step 1 of the report recorded the same id as
+`before.instance`.
+
+**Now replace the container.** The reliable way is to deploy a **new revision** of the service —
+any change will do, e.g. a throwaway environment variable:
+`--update-env-vars=BOUNCE=$(date +%s)`. Cloud Run starts fresh containers for the new revision
+and drains the old ones over a few seconds. (Waiting for the service to scale to zero — about
+15 minutes idle — achieves the same thing, more slowly.)
 
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · Lecture 2 — a Cloud Run revision
 is immutable; a change means a new one.
 
-**Verified by.** Step 2 of the report:
+**Then look, in this order:**
 
-```bash
-python phase-4-chat-app/make_report.py --recheck
-```
+1. `curl -s $CHAT_URL/health` — the `instance` id should now be **different** from the one you
+   noted. If it is the same, the old container is still draining; wait ten seconds and retry.
+2. In the UI tab, press **Load history**. Instead of your conversation you get
+   *(server has no memory of this session)* — that line is the UI's rendering of an **HTTP 404**
+   from `/sessions/<id>/messages`. The container answering you was born after your session and
+   has an empty `MemoryStore`.
+3. Record it:
 
-You want: a **different `instance`** id, and **HTTP 404 — the server has no memory of your
-session**. (If it says *SAME instance*, the old container is still serving; redeploy and try
-again.) In the browser tab from Task 6, press **Load history** and watch the conversation you
-had a minute ago come back empty.
+   ```bash
+   python phase-4-chat-app/make_report.py --recheck
+   ```
+
+   It prints both ids and the status — you want *a different instance* and *HTTP 404* — and
+   stores them as `after.instance` / `after.history_status`. If it prints *SAME instance as
+   before*, go back to step 1.
 
 This is what *stateless* means, and it is not a bug in Cloud Run — it is the contract. A
 container's memory is scratch space; anything that must outlive a request needs to live
@@ -214,10 +261,7 @@ service costs nothing. The Phase 5 sheet has the teardown for both.
 1. Filled `rag.py`.
 2. A deployed, public **Cloud Run** chat server + the **chat UI** on Cloud Storage.
 3. `submission/phase4_report.json` with both steps (before / after the fresh instance).
-4. A **green** `autograde-phase-4` CI run + a 90-second demo recording that ends with
-   *Load history* coming back empty.
-5. In your demo notes: the custom role id from Task 5, its two permissions, and one sentence
-   on what `roles/bigquery.dataViewer` would have allowed that it does not.
+4. A **green** `autograde-phase-4` CI run.
 
 ## How your work is checked
 

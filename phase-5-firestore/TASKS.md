@@ -91,11 +91,11 @@ service account granted the role that lets it read and write Firestore — witho
 
 **Taught in.** Fundamentals M6 *Applications in the Cloud* · Core Services M1 *IAM* · Lecture 2
 
-**Verified by.** `curl $CHAT_URL/healthz` answers `"store": "firestore"`, and the live tests in
+**Verified by.** `curl $CHAT_URL/health` answers `"store": "firestore"`, and the live tests in
 Task 7. Check it before going on:
 
 ```bash
-curl -s $CHAT_URL/healthz
+curl -s $CHAT_URL/health
 curl -s -X POST $CHAT_URL/chat -H 'Content-Type: application/json' \
      -d '{"session_id":"cli","message":"love and the king"}'
 ```

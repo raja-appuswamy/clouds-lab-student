@@ -75,7 +75,7 @@ kind create cluster ──► Deployment (2 pods) ──► Service :30080 ─�
 - **Live checks** curl the Terraform-managed service while it exists (they skip once your report
   records the destroy — so push once *before* destroying).
 - **Report checks** read `submission/phase7_report.json`, built in four stages by
-  `make_report.py`: the apply (resource types, healthz), the load test (≥ 500 requests, sane
+  `make_report.py`: the apply (resource types, health), the load test (≥ 500 requests, sane
   percentiles, **peak instances ≥ 2**), the Kubernetes rollout (2/2 ready, revision ≥ 2, ≥ 2
   distinct pods answering), and the destroy (0 resources left, URL dead).
 - The **post-mortem** and the **demo** are assessed by the instructor.

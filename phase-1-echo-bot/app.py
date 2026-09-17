@@ -57,8 +57,8 @@ def index():
     )
 
 
-@app.get("/healthz")
-def healthz():
+@app.get("/health")
+def health():
     return "ok", 200
 
 

@@ -43,9 +43,9 @@ def _post_chat(base: str, session_id: str, message: str):
 
 
 @points(10)
-def test_healthz(report):
-    status, body = _get(report.get("chat_url", "").rstrip("/") + "/healthz")
-    assert status == 200, f"/healthz did not return 200 (got {status})"
+def test_health(report):
+    status, body = _get(report.get("chat_url", "").rstrip("/") + "/health")
+    assert status == 200, f"/health did not return 200 (got {status})"
 
 
 @points(20)

@@ -85,7 +85,7 @@ server gets a store that outlives its containers.
 ## How it's graded
 
 - **Offline unit tests** grade `rank_topk` and `build_rag_prompt` (pure Python).
-- **Live checks** curl your **public Cloud Run** URL: `/healthz`, a real `/chat` request (which
+- **Live checks** curl your **public Cloud Run** URL: `/health`, a real `/chat` request (which
   exercises retrieval + generation end to end), and `/sessions/{id}/messages` reading back
   what was just said.
 - **Report check**: `make_report.py` records your URLs and the two-step statelessness

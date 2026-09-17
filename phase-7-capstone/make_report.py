@@ -82,18 +82,18 @@ def stage_terraform(report: dict) -> dict:
     resources, outputs = _tf_state()
     by_type = collections.Counter(r["type"] for r in resources)
     chat_url = (outputs.get("chat_url") or "").rstrip("/")
-    status, health = _get_json(f"{chat_url}/healthz") if chat_url else (0, {})
+    status, health = _get_json(f"{chat_url}/health") if chat_url else (0, {})
     print(f"terraform state: {len(resources)} managed resources")
     for t, n in sorted(by_type.items()):
         print(f"  {n:>2}  {t}")
-    print(f"chat_url: {chat_url}  ->  /healthz {status} {health}")
+    print(f"chat_url: {chat_url}  ->  /health {status} {health}")
     report["project"] = subprocess.run(["gcloud", "config", "get-value", "project"],
                                        capture_output=True, text=True).stdout.strip()
     report["terraform"] = {
         "resource_count": len(resources),
         "resources_by_type": dict(sorted(by_type.items())),
         "outputs": outputs,
-        "healthz": {"status": status, "store": health.get("store"), "instance": health.get("instance")},
+        "health": {"status": status, "store": health.get("store"), "instance": health.get("instance")},
     }
     report["chat_url"] = chat_url
     return report
@@ -120,7 +120,7 @@ def stage_k8s(report: dict, port: int = 30080, probes: int = 20) -> dict:
     # Through the Service: which pods answer? kube-proxy spreads requests across ready pods.
     seen: collections.Counter = collections.Counter()
     for _ in range(probes):
-        status, body = _get_json(f"http://localhost:{port}/healthz")
+        status, body = _get_json(f"http://localhost:{port}/health")
         if status == 200:
             seen[body.get("instance")] += 1
     print(f"deployment chat: {dep['status'].get('readyReplicas', 0)}/{dep['spec']['replicas']} ready, "
@@ -145,7 +145,7 @@ def stage_k8s(report: dict, port: int = 30080, probes: int = 20) -> dict:
 def stage_destroyed(report: dict) -> dict:
     resources, _ = _tf_state()
     chat_url = report.get("chat_url", "")
-    status, _ = _get_json(f"{chat_url}/healthz") if chat_url else (0, {})
+    status, _ = _get_json(f"{chat_url}/health") if chat_url else (0, {})
     print(f"terraform state after destroy: {len(resources)} managed resources; "
           f"old chat_url answers HTTP {status} (0 = gone)")
     report["destroyed"] = {"resources_remaining": len(resources), "chat_url_status": status}

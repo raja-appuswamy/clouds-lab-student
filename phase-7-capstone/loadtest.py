@@ -2,7 +2,7 @@
 
     python phase-7-capstone/loadtest.py --url https://chat-tf-xxx.run.app --clients 20 --seconds 120
 
-`clients` threads each loop for `seconds`, hitting the two cheap endpoints (``/healthz`` and
+`clients` threads each loop for `seconds`, hitting the two cheap endpoints (``/health`` and
 ``/sessions/<id>/messages``) plus one ``/chat`` every 25 requests, so the service does real
 work without burning through the model's inference budget. Every request's latency and status
 are recorded.
@@ -60,8 +60,8 @@ def _client(base: str, deadline: float, out: list, lock: threading.Lock, cid: in
             status, dt = _one(f"{base}/chat", {"session_id": session, "message": "the king and his crown"})
             kind = "chat"
         elif i % 2 == 0:
-            status, dt = _one(f"{base}/healthz")
-            kind = "healthz"
+            status, dt = _one(f"{base}/health")
+            kind = "health"
         else:
             status, dt = _one(f"{base}/sessions/{session}/messages")
             kind = "history"
@@ -137,7 +137,7 @@ def main(argv=None) -> int:
         print(f"  {n} requests so far", flush=True)
     end = datetime.now(timezone.utc)
 
-    lat = {k: [dt for kind, s, dt in results if kind == k and s == 200] for k in ("healthz", "history", "chat")}
+    lat = {k: [dt for kind, s, dt in results if kind == k and s == 200] for k in ("health", "history", "chat")}
     all_ok = [dt for _, s, dt in results if s == 200]
     errors = sum(1 for _, s, _ in results if s != 200)
     summary = {

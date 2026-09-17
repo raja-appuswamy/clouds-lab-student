@@ -86,11 +86,11 @@ def root():
     """
     if UI_FILE.exists():
         return FileResponse(UI_FILE)
-    return {"service": "eurecomgpt-chat", "ui": "hosted on Cloud Storage (Task 6)", "try": "/healthz"}
+    return {"service": "eurecomgpt-chat", "ui": "hosted on Cloud Storage (Task 6)", "try": "/health"}
 
 
-@app.get("/healthz")
-def healthz():
+@app.get("/health")   # not /healthz: Cloud Run's front end intercepts that path and answers 404 itself
+def health():
     return {"status": "ok", "store": os.environ.get("STORE_BACKEND", "memory"), "instance": INSTANCE}
 
 

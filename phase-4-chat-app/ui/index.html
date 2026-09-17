@@ -62,7 +62,8 @@
   async function send() {
     const api = $("api").value.trim().replace(/\/$/, "");
     const message = $("message").value.trim();
-    if (!api || !message) return;
+    if (!api) { add("assistant", "No API URL set. Paste your Cloud Run service URL (https://chat-....run.app) into the first field."); return; }
+    if (!message) return;
     add("user", message);
     $("message").value = "";
     try {
@@ -84,7 +85,7 @@
   // if it is a fresh instance). Phase 5: the same turns, from Firestore, whichever instance answers.
   async function loadHistory() {
     const api = $("api").value.trim().replace(/\/$/, "");
-    if (!api) return;
+    if (!api) { add("assistant", "No API URL set. Paste your Cloud Run service URL (https://chat-....run.app) into the first field."); return; }
     $("log").innerHTML = "";
     try {
       const res = await fetch(api + "/sessions/" + encodeURIComponent($("session").value || "web-1") + "/messages");

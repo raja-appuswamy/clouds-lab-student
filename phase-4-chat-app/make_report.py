@@ -75,7 +75,7 @@ def step_recheck(report: dict) -> dict:
     before = report["before"]
     status, hist = get_history(report["chat_url"], before["session_id"])
     try:
-        with urllib.request.urlopen(report["chat_url"].rstrip("/") + "/healthz", timeout=60) as r:
+        with urllib.request.urlopen(report["chat_url"].rstrip("/") + "/health", timeout=60) as r:
             instance = json.loads(r.read()).get("instance")
     except (urllib.error.URLError, OSError, ValueError):
         instance = hist.get("instance")

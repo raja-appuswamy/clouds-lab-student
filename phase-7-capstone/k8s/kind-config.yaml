@@ -3,7 +3,7 @@
 # The extraPortMappings line is what lets you reach the Service from Cloud Shell: node port
 # 30080 inside the Docker container is published as localhost:30080 outside it. Requests to
 # that port go through kube-proxy, which spreads them across the Deployment's pods — so
-# `curl localhost:30080/healthz` a few times shows you different `instance` ids.
+# `curl localhost:30080/health` a few times shows you different `instance` ids.
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: eurecomgpt

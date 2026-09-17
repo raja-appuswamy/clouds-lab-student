@@ -46,8 +46,8 @@ def _post_chat(base: str, session_id: str, message: str):
 
 @points(5)
 def test_service_is_on_firestore(report):
-    status, body = _get_json(report.get("chat_url", "").rstrip("/") + "/healthz")
-    assert status == 200, f"/healthz did not return 200 (got {status})"
+    status, body = _get_json(report.get("chat_url", "").rstrip("/") + "/health")
+    assert status == 200, f"/health did not return 200 (got {status})"
     assert body.get("store") == "firestore", (
         f"the service reports store={body.get('store')!r} — redeploy with STORE_BACKEND=firestore")
 
