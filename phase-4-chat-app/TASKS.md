@@ -42,14 +42,35 @@ project.
 
 ## Task 2 — Implement the RAG helpers and run the unit tests
 
-Fill the TODOs in [rag.py](rag.py) — `rank_topk` and `build_rag_prompt`. This task is code,
-not cloud operations — the commands are given in full.
+Fill the TODOs in [rag.py](rag.py) — `rank_topk` and `build_rag_prompt`. Before you start,
+read the README's *One request, step by step* table and the module docstring at the top of
+`rag.py`: together they show where your two functions sit in the path a message takes (the
+BigQuery query has already filtered the rows to the query's terms when `rank_topk` sees them)
+and walk one message through the whole chain. This task is code, not cloud operations — the
+commands are given in full.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r phase-4-chat-app/requirements.txt
 python -m pytest phase-4-chat-app/tests/test_units.py -p autograder.points -q
 ```
+
+The tests need only pytest; the phase's own requirements are the *server's* — installing them
+lets you run it locally before you build any image, which is the quickest way to see a stack
+trace instead of a Cloud Run 500:
+
+```bash
+MODEL_URL=$MODEL_URL BQ_TABLE=$BQ_TABLE uvicorn --app-dir phase-4-chat-app server:app --port 8080
+curl -s localhost:8080/healthz
+```
+
+(`/chat` works locally too — Cloud Shell's own credentials reach BigQuery.)
+
+**To try the UI locally**, use Cloud Shell's **Web Preview** (the ⧉ button → *Preview on port
+8080*). The server serves `ui/index.html` at `/` when run from the source tree, so the page and
+the API share one origin — the API field is pre-filled — and you can chat and *Load history*
+before any image exists. Do not type `localhost` into the API field of a previewed page: in your
+browser, localhost is your laptop, not Cloud Shell.
 
 Then read — do not edit — [server.py](server.py) and [store.py](store.py). The server keeps
 chat history in a **`MemoryStore`**: a Python dict inside the running container. Task 8 is

@@ -35,8 +35,12 @@
 
 <script>
   const $ = (id) => document.getElementById(id);
-  // Remember the API URL between visits.
+  // Remember the API URL between visits. If this page is being served BY the API itself
+  // (local testing: uvicorn serves ui/index.html at /), default to that same origin.
   try { $("api").value = localStorage.getItem("api") || ""; } catch (e) {}
+  if (!$("api").value && !location.origin.includes("storage.googleapis.com")) {
+    $("api").value = location.origin;
+  }
   $("api").addEventListener("change", () => {
     try { localStorage.setItem("api", $("api").value.trim()); } catch (e) {}
   });

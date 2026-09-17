@@ -20,8 +20,11 @@ from __future__ import annotations
 import os
 import urllib.request
 import uuid
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import infer
@@ -31,7 +34,14 @@ from rag import build_rag_prompt
 
 app = FastAPI(title="eurecomgpt-chat")
 
+# The UI is served from a DIFFERENT origin (storage.googleapis.com) than this API (*.run.app),
+# so the browser sends a CORS preflight before every POST /chat. Without these headers the
+# preflight fails and the UI shows "Failed to fetch" while curl works fine. Public API, any
+# origin may call it — same policy as --allow-unauthenticated.
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
 INSTANCE = uuid.uuid4().hex[:8]     # one per process: new container => new id
+UI_FILE = Path(__file__).resolve().parent / "ui" / "index.html"   # present locally, not in the image
 
 _weights = None
 _bq = None
@@ -65,6 +75,18 @@ def turns():
 class ChatIn(BaseModel):
     session_id: str
     message: str
+
+
+@app.get("/")
+def root():
+    """Serve the chat UI when running from the source tree (local testing in Cloud Shell).
+
+    In the deployed image ``ui/`` is not copied — the UI lives on Cloud Storage — so this
+    answers with a pointer instead.
+    """
+    if UI_FILE.exists():
+        return FileResponse(UI_FILE)
+    return {"service": "eurecomgpt-chat", "ui": "hosted on Cloud Storage (Task 6)", "try": "/healthz"}
 
 
 @app.get("/healthz")

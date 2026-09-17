@@ -31,6 +31,25 @@ Plus a minimal **chat UI** (`ui/index.html`) hosted as a Cloud Storage static si
 retrieved docs) and `build_rag_prompt` (assemble the prompt). Everything else — NumPy
 inference, the BigQuery query, the store, the FastAPI wiring, the UI — is provided.
 
+### One request, step by step
+
+Where your two functions sit in the path a message takes — read the four files in this order:
+
+| Step | File · function | What happens |
+|---|---|---|
+| 1 | [server.py](server.py) `chat()` | receives `{"session_id", "message"}` |
+| 2 | [retrieval.py](retrieval.py) `tokenize()` | lower-cases, drops stop-words — **the same tokenizer as Phase 3**, so query terms match table terms |
+| 3 | [retrieval.py](retrieval.py) `query_tfidf()` | `SELECT term, doc_id, tfidf FROM <your tfidf table> WHERE term IN (those terms)` — BigQuery filters; nothing is scored yet |
+| 4 | **[rag.py](rag.py) `rank_topk()`** — *yours* | sums tfidf per `doc_id`, sorts, returns the `k` best ids |
+| 5 | [retrieval.py](retrieval.py) `load_corpus()` | maps ids back to text with Phase 3's deterministic 60-document split |
+| 6 | **[rag.py](rag.py) `build_rag_prompt()`** — *yours* | `Context:` + those texts + `User: <message>` + `Assistant:` |
+| 7 | [infer.py](infer.py) `generate()` | the Phase-2 weights complete the prompt (NumPy) |
+| 8 | [store.py](store.py) `store_turn()` ×2 | user turn and reply recorded — in this phase, in memory |
+
+Steps 4 and 6 are pure functions — rows in, ids out; strings in, string out — which is why
+they have offline unit tests and the rest of the path does not. The module docstring in
+`rag.py` walks a concrete message ("the king and his crown") through all eight steps.
+
 ```
 Browser UI (Cloud Storage)  ──►  Cloud Run: FastAPI chat
                                    ├─ BigQuery  (Phase-3 TF-IDF)  → retrieve
