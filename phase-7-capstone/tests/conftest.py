@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -51,6 +52,37 @@ def deployment() -> dict:
     import yaml
 
     return yaml.safe_load((K8S_DIR / "deployment.yaml").read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def policy() -> dict:
+    """agent/policy.json — your approval boundary for the agent (Task 2)."""
+    path = PHASE_DIR / "agent" / "policy.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+MARKER = re.compile(r"<!--answer:([A-Za-z0-9_]+)-->(.*?)<!--/answer-->", re.DOTALL)
+
+
+def read_slots(path: Path) -> dict[str, str]:
+    """{slot: text} from a filled writeup template, or {} if the file is missing."""
+    if not path.exists():
+        return {}
+    return {m.group(1): m.group(2).strip() for m in MARKER.finditer(path.read_text(encoding="utf-8"))}
+
+
+def filled(slots: dict[str, str], name: str) -> bool:
+    return bool(slots.get(name)) and slots[name].strip().lower() != "todo" and not slots[name].lstrip().startswith("TODO")
+
+
+@pytest.fixture(scope="session")
+def supervision() -> dict[str, str]:
+    return read_slots(REPO_ROOT / "submission" / "phase7_supervision.md")
+
+
+@pytest.fixture(scope="session")
+def review() -> dict[str, str]:
+    return read_slots(REPO_ROOT / "submission" / "phase7_review.md")
 
 
 @pytest.fixture(scope="session")

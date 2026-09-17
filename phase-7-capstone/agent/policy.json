@@ -1,0 +1,38 @@
+{
+  "_comment": "Your approval boundary for the agent (Task 2). Tool-agnostic: translate it into your agent's own settings (gemini-settings.json / claude-settings.json are starting points), and keep this file as the record of what you decided. The autograder reads THIS file.",
+  "auto": [
+    "terraform init",
+    "terraform validate",
+    "terraform plan",
+    "terraform show",
+    "terraform output",
+    "kubectl get",
+    "kubectl describe",
+    "kubectl logs",
+    "kubectl rollout status",
+    "gcloud * list",
+    "gcloud * describe",
+    "curl"
+  ],
+  "confirm": [
+    "terraform apply",
+    "kubectl apply",
+    "kubectl set",
+    "kubectl rollout restart",
+    "gcloud * create",
+    "gcloud * update",
+    "gcloud * add-iam-policy-binding",
+    "kind create cluster",
+    "kind load"
+  ],
+  "forbidden": [
+    "terraform destroy",
+    "terraform apply -destroy",
+    "kubectl delete",
+    "kind delete",
+    "gcloud * delete",
+    "gcloud * remove-iam-policy-binding",
+    "rm -rf",
+    "git push --force"
+  ]
+}

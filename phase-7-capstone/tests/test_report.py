@@ -1,8 +1,9 @@
-"""Phase 7 report tests — apply, load test, Kubernetes, destroy (public). (50 points.)"""
+"""Phase 7 report tests — apply, load test, Kubernetes, destroy, and the two logs (public). (50 points.)"""
 
 from __future__ import annotations
 
 from autograder.points import points
+from conftest import filled
 
 REQUIRED_TYPES = {
     "google_cloud_run_v2_service", "google_cloud_run_v2_service_iam_member", "google_service_account",
@@ -12,7 +13,7 @@ REQUIRED_TYPES = {
 }
 
 
-@points(10)
+@points(8)
 def test_terraform_apply_recorded(report):
     tf = report.get("terraform", {})
     assert tf.get("resource_count", 0) >= 12, f"expected a full stack (>= 12 managed resources), got {tf.get('resource_count')}"
@@ -23,7 +24,7 @@ def test_terraform_apply_recorded(report):
         "right after apply, /health should answer 200 with store=firestore")
 
 
-@points(15)
+@points(12)
 def test_load_test_shows_elasticity(report):
     lt = report.get("loadtest", {})
     assert lt.get("requests", 0) >= 500, f"load test too small ({lt.get('requests')} requests) — run >= 500"
@@ -35,7 +36,7 @@ def test_load_test_shows_elasticity(report):
         "Check max_instance_request_concurrency in main.tf and that loadtest.py waited for Monitoring.")
 
 
-@points(15)
+@points(12)
 def test_kubernetes_rollout(report):
     k = report.get("k8s", {})
     assert k.get("replicas", 0) >= 2 and k.get("ready_replicas", 0) == k.get("replicas"), (
@@ -48,9 +49,35 @@ def test_kubernetes_rollout(report):
     assert "PLACEHOLDER" not in k.get("image", "PLACEHOLDER"), "deployment.yaml still has the image placeholder"
 
 
-@points(10)
+@points(8)
 def test_stack_destroyed(report):
     d = report.get("destroyed")
     assert d, "no destroy recorded — run `terraform destroy`, then make_report.py destroyed (Task 11)"
     assert d.get("resources_remaining") == 0, f"{d.get('resources_remaining')} resources still in state after destroy"
     assert d.get("chat_url_status") in (0, 404), f"the destroyed service still answers HTTP {d.get('chat_url_status')}"
+
+
+@points(5)
+def test_supervision_log_complete(supervision):
+    """submission/phase7_supervision.md: every slot filled, >= 4 approvals including a refusal."""
+    assert supervision, "submission/phase7_supervision.md not found — copy supervision_template.md there (Task 11)"
+    for slot in ("agent_tool", "agent_identity", "boundary_rationale", "approvals", "refusal",
+                 "iam_403", "agent_mistake", "by_hand", "trust_boundary"):
+        assert filled(supervision, slot), f"supervision log slot {slot!r} is still TODO"
+    rows = [ln for ln in supervision["approvals"].splitlines()
+            if ln.strip().startswith("|") and not ln.strip().startswith("|--") and "TODO" not in ln
+            and not ln.strip().startswith("| #")]
+    assert len(rows) >= 4, f"the approvals table needs at least 4 filled rows, found {len(rows)}"
+    decisions = " ".join(rows).lower()
+    assert " no " in decisions or "| no" in decisions or "refused" in decisions or "denied" in decisions, (
+        "at least one approval row must be a refusal (Decision = no)")
+
+
+@points(5)
+def test_review_complete(review):
+    """submission/phase7_review.md: three faults, each with where / what / fix, and a verdict."""
+    assert review, "submission/phase7_review.md not found — copy review_template.md there (Task 10)"
+    for letter in "abc":
+        for part in ("where", "what", "fix"):
+            assert filled(review, f"fault_{letter}_{part}"), f"review slot fault_{letter}_{part} is still TODO"
+    assert filled(review, "verdict"), "review verdict is still TODO"

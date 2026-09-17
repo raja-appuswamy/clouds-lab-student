@@ -20,6 +20,12 @@ variable "alert_email" {
   type        = string
 }
 
+variable "impersonate" {
+  description = "Service account e-mail Terraform should impersonate (Task 1's agent-operator), or null."
+  type        = string
+  default     = null
+}
+
 variable "service_name" {
   description = "Name of the Cloud Run service Terraform manages. Distinct from Phase 4/5's `chat` so both can coexist."
   type        = string

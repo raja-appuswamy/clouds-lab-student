@@ -49,7 +49,7 @@ else assumes.
 | **4 — The chat app** (Week 6) | A FastAPI server on Cloud Run that retrieves (Phase 3) → generates (Phase 2) → keeps the conversation *in the container's memory*, plus the browser UI on Cloud Storage. Ends with an experiment: force a fresh container and watch the history vanish | **A public chat URL** — the working product, minus a memory | Phase 5 redeploys it with a real store; Phase 7 demos it |
 | **5 — Remember conversations** (Week 7) | The Firestore schema `sessions/{id}/messages` and a **transactional** `send_message` that cannot lose updates; the same chat server redeployed with Firestore as its store — and the Phase-4 experiment repeated, with the opposite result | The **`firestore_store`** module and the schema, and a chat app that remembers | Phase 6 runs its anomalies, 2PC and Raft over the schema |
 | **6 — Make it correct** (Weeks 8–9) | Two-phase commit across Firestore and BigQuery; a toy Raft with leader election and log replication; reproductions of the consistency anomalies they prevent | A distributed-correctness report; an audit log in BigQuery | Phase 7 |
-| **7 — Capstone** (Weeks 10–11) | The whole stack **as Terraform** — service, identity, data plane, alert, log sink — applied from zero; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell) with a rolling update; a costed GKE-vs-Cloud-Run comparison; `terraform destroy`, proven | The post-mortem and the demo | — |
+| **7 — Capstone** (Weeks 10–11) | **Supervise an AI agent** operating your stack: you give it a bounded identity and an approval boundary; it writes the Terraform from a spec — service, identity, data plane, alert, log sink — and runs the plan/apply loop under your approval; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell); a **review** of another agent's Terraform with three planted faults; `terraform destroy` — by you | The supervision log, the review, the post-mortem, the demo | — |
 
 Two things follow from the table that are easy to miss when you are inside one phase:
 
@@ -86,9 +86,11 @@ bottom up:
    here is what fills that hole, and it is the reason the chat history becomes trustworthy.
 6. **What breaks when machines fail** (Lectures 9–11 → Phase 6). Consistency models, 2PC's
    blocking problem, Raft's split-brain prevention — implemented, then broken on purpose.
-7. **Operating it** (Phase 7). Everything you clicked or typed in Phases 4–5 becomes code you
-   can apply and destroy; the elasticity Lecture 1 promised becomes a number from Cloud
-   Monitoring; and Kubernetes shows you what Cloud Run had been deciding on your behalf.
+7. **Operating it — through an agent** (Phase 7). Everything you clicked or typed in Phases
+   4–5 becomes code an AI agent writes and applies under your supervision; the elasticity
+   Lecture 1 promised becomes a number from Cloud Monitoring; Kubernetes shows you what Cloud
+   Run had been deciding on your behalf; and the phase's real subject is the boundary you set
+   for the agent and the judgement you apply to what it produces.
 
 ---
 
@@ -102,6 +104,18 @@ bottom up:
 Everything you write lives in **one Git repository** — this one. Each phase is a folder; your
 reports go in `submission/`; pushing runs that phase's autograder in your own GitHub Actions.
 Colab clones this repo to get your code, so **commit and push before you open a notebook**.
+
+## Using AI: reader, not operator — until Phase 7
+
+You may use an AI assistant to **understand** anything in this repository: explain provided
+code, read a stack trace, decode a `gcloud` error, walk you through the workflow YAML. That
+use strengthens the lab. In Phases 0–6 you may not use it to **produce** the graded work — the
+withheld `gcloud` commands, the functions marked `TODO`, the writeups — because those phases
+exist to get the primitives into *your* hands, and an agent typing them defeats the purpose in
+a way no grader can detect but you will feel in Phase 7. Phase 7 lifts the rule deliberately:
+there, an agent operates your stack and the graded skill is how you supervise it. The line is
+the same one a good engineer draws at work: use the tool to learn faster; do not let it learn
+instead of you.
 
 ## How you are graded, in one paragraph
 

@@ -16,4 +16,7 @@ terraform {
 provider "google" {
   project = var.project
   region  = var.region
+  # Task 1: the agent (and Terraform) act as a dedicated, bounded service account — no key
+  # file; your own credentials mint short-lived tokens for it. Null = act as yourself.
+  impersonate_service_account = var.impersonate
 }

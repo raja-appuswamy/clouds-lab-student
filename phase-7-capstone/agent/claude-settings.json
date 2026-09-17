@@ -1,0 +1,18 @@
+{
+  "_comment": "Starting point for Claude Code (.claude/settings.json in the repo root). allow = runs without asking; deny = refused outright; everything else prompts. Keep agent/policy.json as the source of truth.",
+  "permissions": {
+    "allow": [
+      "Bash(terraform init*)", "Bash(terraform validate*)", "Bash(terraform plan*)",
+      "Bash(terraform show*)", "Bash(terraform output*)",
+      "Bash(kubectl get*)", "Bash(kubectl describe*)", "Bash(kubectl logs*)", "Bash(kubectl rollout status*)",
+      "Bash(gcloud * list*)", "Bash(gcloud * describe*)", "Bash(curl *)",
+      "Bash(python -m pytest*)"
+    ],
+    "deny": [
+      "Bash(terraform destroy*)", "Bash(terraform apply -destroy*)",
+      "Bash(kubectl delete*)", "Bash(kind delete*)",
+      "Bash(gcloud * delete*)", "Bash(gcloud * remove-iam-policy-binding*)",
+      "Bash(rm -rf*)", "Bash(git push --force*)"
+    ]
+  }
+}

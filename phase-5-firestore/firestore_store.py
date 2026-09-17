@@ -9,7 +9,34 @@ Data model:
     sessions/{session_id}                     -> {id, created_at, message_count}
     sessions/{session_id}/messages/{auto_id}  -> {role, text, created_at}
 
-You implement the transaction body ``_apply`` — the read-modify-write that must be atomic.
+Where your code sits
+--------------------
+Three callers reach ``send_message`` — and every one of them ends in ``_apply``, the function
+you write:
+
+    Phase-4 server, every /chat request (twice: the user turn, then the reply)
+      server.chat()
+        -> store.FirestoreStore.store_turn(session_id, role, text)     phase-4-chat-app/store.py
+             -> firestore_store.send_message(db, session_id, role, text)
+                  -> run_in_transaction(db, func)                       opens a transaction
+                       -> firestore.transactional(func)(txn)            the client library...
+                            -> _apply(txn, session_ref, msg_ref, role, text, now)   ...calls YOU
+
+    run_phase5.py (Cloud Shell): the ACID demo and the persistence proof
+      -> send_message(...) directly, 20 at a time from threads     -> _apply, under contention
+
+    tests/test_units.py: offline, against fake_firestore
+      -> send_message(...)                                          -> _apply, no network
+
+``send_message`` (provided) does the setup — makes ``session_ref`` and a fresh ``msg_ref`` with
+an auto-generated id, stamps ``now`` — and hands them to ``_apply`` inside a transaction.
+``_apply`` does the four operations that must succeed or fail *together*: read the counter,
+write the message, write the counter + 1, return the id. The split exists because Firestore
+may run ``_apply`` **more than once**: if another writer changed the session between your read
+and your commit, the library aborts, waits, and calls ``_apply`` again from the top. That retry
+is what makes 20 concurrent sends end with a counter of exactly 20 — and it is why the body
+must contain nothing but reads and writes through ``transaction``.
+
 Develop against the in-memory ``fake_firestore`` (offline unit tests), then run against real
 Firestore in ``run_phase5.py``. The same code works on both — the real client and the fake
 expose the same methods — and the same file is copied into the chat image, so the server's
@@ -35,8 +62,39 @@ def create_session(db, session_id: str) -> None:
 def _apply(transaction, session_ref, msg_ref, role: str, text: str, now: str) -> str:
     """Transaction body: append the message AND bump the session counter, atomically.
 
-    Uses ``transaction`` for all reads/writes so the whole thing commits or aborts as a unit.
-    Returns the new message id.
+    Called by the Firestore client library (via ``run_in_transaction``), not by you — possibly
+    several times for one ``send_message`` if a concurrent writer forces a retry. It must do
+    ONLY reads and writes through ``transaction``; no prints, no other side effects.
+
+    Arguments — all prepared by ``send_message``:
+
+    ``transaction``
+        The open transaction. Every read goes through it (``ref.get(transaction=transaction)``)
+        and every write is a method on it (``transaction.set(ref, data)``,
+        ``transaction.update(ref, fields)``). Nothing is written when these lines run — the
+        writes are queued and applied at commit, all or none. On the fake it is a
+        ``FakeTransaction`` with the same three methods.
+    ``session_ref``
+        A ``DocumentReference`` to ``sessions/{session_id}``. Its document holds
+        ``message_count`` — the field you read, add 1 to, and write back. It usually exists
+        (``create_session`` or a previous send made it); treat a missing document or a missing
+        field as a count of 0.
+    ``msg_ref``
+        A ``DocumentReference`` to ``sessions/{session_id}/messages/{auto_id}`` — a new id was
+        generated but **no document exists yet**; ``transaction.set(msg_ref, ...)`` creates it.
+    ``role``, ``text``
+        The message: ``"user"`` or ``"assistant"``, and its content. Stored verbatim.
+    ``now``
+        An ISO-8601 UTC timestamp string, stamped once by ``send_message`` so a retried
+        transaction stores the same time.
+
+    Returns ``msg_ref.id`` (the auto-generated message id) — ``send_message`` passes it back
+    to its caller.
+
+    Why the read must be inside the transaction: ``run_phase5.py``'s "naive" version reads the
+    counter *outside*, then writes — and two concurrent sends both read 5 and both write 6,
+    losing an update. Inside the transaction, Firestore notices the conflict and retries one of
+    them, so the second reads 6 and writes 7.
     """
     # TODO:
     #   1. read the session snapshot via session_ref.get(transaction=transaction)

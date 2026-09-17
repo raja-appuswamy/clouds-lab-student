@@ -3,7 +3,7 @@
 Reads ``chat_url`` (Terraform's output, recorded by ``make_report.py terraform``) and curls it.
 These run in your CI **between** `terraform apply` and `terraform destroy` — once you have
 destroyed the stack (Task 11) they will fail, by design: the last push before destroy is the
-one that should be green here, and the report tests cover the destroy. (15 points.)
+one that should be green here, and the report tests cover the destroy. (10 points.)
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ def _skip_if_destroyed(report):
         pytest.skip("stack already destroyed (Task 11) — live checks no longer apply")
 
 
-@points(5)
+@points(3)
 def test_terraform_service_is_up_on_firestore(report):
     _skip_if_destroyed(report)
     status, body = _get_json(report.get("chat_url", "").rstrip("/") + "/health")
@@ -43,7 +43,7 @@ def test_terraform_service_is_up_on_firestore(report):
     assert body.get("store") == "firestore", f"service reports store={body.get('store')!r}; the env in main.tf is wrong"
 
 
-@points(10)
+@points(7)
 def test_terraform_service_chats(report):
     _skip_if_destroyed(report)
     base = report["chat_url"].rstrip("/")

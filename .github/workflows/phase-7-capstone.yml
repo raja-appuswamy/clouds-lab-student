@@ -1,7 +1,7 @@
 # Student-side autograding CI for Phase 7.
 #
-# The offline tests parse terraform/*.tf and k8s/deployment.yaml (python-hcl2 + PyYAML — no
-# terraform or kubectl binary, no GCP credentials). The live tests curl the Terraform-managed
+# The offline tests parse terraform/*.tf, k8s/deployment.yaml and agent/policy.json
+# (python-hcl2 + PyYAML — no terraform or kubectl binary, no GCP credentials). The live tests curl the Terraform-managed
 # service while it exists and skip once your report records the destroy. The report tests read
 # submission/phase7_report.json, built stage by stage by make_report.py.
 name: autograde-phase-7

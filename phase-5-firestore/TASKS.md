@@ -44,8 +44,14 @@ US multi-region.
 ## Task 2 — Implement the transaction, run the offline tests
 
 Fill the TODO in [firestore_store.py](firestore_store.py) — the `_apply` transaction body
-(read the counter, append the message, bump the counter). Test it offline against the
-in-memory fake Firestore (no cloud needed). This task is code — commands given in full.
+(read the counter, append the message, bump the counter). Before you start, read the README's
+*One message, step by step* table and the two docstrings in `firestore_store.py` — the module's,
+which shows who calls `send_message` and how it reaches `_apply`, and `_apply`'s own, which
+describes every argument you receive (`transaction`, `session_ref`, `msg_ref`, `role`, `text`,
+`now`) and what you must return. The one idea to hold on to: Firestore may run your function
+**more than once** for a single send, so it must contain only reads and writes through
+`transaction`. Test it offline against the in-memory fake Firestore (no cloud needed). This
+task is code — commands given in full.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate

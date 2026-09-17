@@ -43,6 +43,24 @@ Browser UI  ──►  Cloud Run: FastAPI chat (unchanged)
                    └─ FirestoreStore → your send_message → Firestore   ← this phase
 ```
 
+### One message, step by step
+
+Where your function sits in the path a turn takes from the server to the database:
+
+| Step | File · function | What happens |
+|---|---|---|
+| 1 | `phase-4-chat-app/server.py` `chat()` | after generating the reply, calls `store_turn` twice — user turn, then assistant turn |
+| 2 | `phase-4-chat-app/store.py` `FirestoreStore.store_turn()` | one line: `firestore_store.send_message(db, session_id, role, text)` |
+| 3 | [firestore_store.py](firestore_store.py) `send_message()` — provided | builds `session_ref` (`sessions/{id}`) and a fresh `msg_ref` (`sessions/{id}/messages/{auto_id}`, no document yet), stamps `now` |
+| 4 | [firestore_store.py](firestore_store.py) `run_in_transaction()` — provided | opens a Firestore transaction and hands your function to the client library |
+| 5 | **[firestore_store.py](firestore_store.py) `_apply()`** — *yours* | inside the transaction: read the session's `message_count`, `set` the message document, `update` the counter to +1, return the message id. **May be called more than once** — if another writer touched the session first, Firestore aborts and retries from the top |
+| 6 | Firestore commit | both writes land, or neither |
+
+`run_phase5.py` and the offline tests call `send_message` directly (step 3 onward) — the
+contention demo fires it from 20 threads at once, which is exactly the retry in step 5 doing
+its job. The module docstring in `firestore_store.py` shows the same chain as a call tree, and
+`_apply`'s docstring describes each argument.
+
 ---
 
 ## Background reading (study before the tasks)

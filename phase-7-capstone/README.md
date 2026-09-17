@@ -1,30 +1,49 @@
-# Phase 7 — Capstone: the whole stack as code, under load, on Kubernetes, and gone
+# Phase 7 — Capstone: supervise an agent operating your stack
 
 > New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
 
-**Goal:** operate what you built. Bring the entire chat stack up **from zero with Terraform** —
-service, identity, data plane, monitoring — load-test it and measure the elasticity you were
-promised in Lecture 1, run the same container on **Kubernetes** and feel what Cloud Run was
-doing for you, write the post-mortem, destroy everything, and demo it.
+**Goal:** operate what you built — with an **AI agent as your operator** and you as the
+engineer accountable for it. The agent writes the Terraform from a spec, runs the plan/apply
+loop, drives `kubectl`, reads errors and retries. You give it a bounded identity, decide what
+it may do without asking, watch it work, catch what it gets wrong, review another agent's
+pull request for planted faults, destroy everything yourself, and demo it. The stack it builds
+is graded exactly as a hand-built one would be; how you supervised is graded as well.
 
 **Lecture map:** synthesis — no new lecture. Lecture 1 (elasticity economics) · Lecture 2
 (containers, revisions) · Lecture 7 (the store you now recreate as code).
 
-**Environment: Google Cloud Shell** (Boost mode for the Kubernetes part). **Prerequisites:**
-Phases 2–5 artifacts still in place — `model.safetensors` and `tfidf.parquet` in your bucket,
-the Firestore database, the Phase-5 image `chat:v2` in Artifact Registry. Two weeks.
+**Environment: Google Cloud Shell** (Boost mode for the Kubernetes part), with an agent that
+executes commands under approval — Gemini CLI has a free tier and runs there; any equivalent is
+fine, and the phase can be done without one. **Prerequisites:** Phases 2–5 artifacts still in
+place — `model.safetensors` and `tfidf.parquet` in your bucket, the Firestore database, the
+Phase-5 image `chat:v2` in Artifact Registry. Two weeks.
+
+### Why the rules change here
+
+Phases 0–6 withhold commands and code because you were learning the primitives — there is no
+substitute for having typed `gcloud run deploy` and read its errors yourself. By now that is
+done. The skill this phase teaches is the one that comes *after* the primitives: specifying
+precisely, delegating the toil, and reviewing what comes back for cost, security and
+correctness while remaining accountable for it. That is what operating cloud systems looks
+like now, and it is only teachable to someone who already has Phases 1–6 in their hands.
 
 ---
 
 ## What you build
 
-1. **The stack, as code** ([terraform/](terraform/)). Twenty-odd resources: the APIs, a
-   least-privilege service account with the custom role from Phase 4, the Cloud Run service with
-   its scaling and environment, a BigQuery dataset whose TF-IDF table is **loaded from your
-   Phase-3 Parquet by a Terraform resource**, and the observability — an alerting policy on 5xx
-   rate, a log-based metric, a log sink that lands every request log in BigQuery, and the IAM
-   binding that lets it. You fill four TODO blocks; `terraform apply` on an empty project gives
-   you a working, monitored service, and `terraform destroy` leaves only the data.
+0. **An identity and a boundary for the agent** ([agent/](agent/)). A service account
+   `agent-operator` with only the roles the stack needs — deliberately not project-IAM admin —
+   that your shell impersonates without a key file; and `policy.json`, your written decision of
+   what the agent may run unasked, what needs your approval, and what is forbidden (destroy,
+   delete). The autograder reads the policy.
+1. **The stack, as code — written by the agent** ([SPEC.md](SPEC.md) → [terraform/](terraform/)).
+   Twenty-odd resources: the APIs, a least-privilege service account with the custom role from
+   Phase 4, the Cloud Run service with its scaling and environment, a BigQuery dataset whose
+   TF-IDF table is **loaded from your Phase-3 Parquet by a Terraform resource**, and the
+   observability — alerting policy, log-based metric, log sink to BigQuery with its IAM binding.
+   The agent completes the scaffolding from the spec; you read the plan and approve the apply.
+   Mid-apply it hits a `403` — a role you withheld on purpose — and *you* decide what to do.
+   `terraform destroy`, which the agent may never run, leaves only the data.
 2. **Elasticity, measured** ([loadtest.py](loadtest.py)). Twenty concurrent clients for two
    minutes, then a query to the Cloud Monitoring API for the peak instance count. With
    `max_instance_request_concurrency = 5`, Cloud Run must scale out — and you have the number.
@@ -32,13 +51,26 @@ the Firestore database, the Phase-5 image `chat:v2` in Artifact Registry. Two we
    a Deployment with two replicas, a readiness probe and resource limits; a NodePort Service;
    a rolling update. Twenty requests through the Service reach two different pods — and `/chat`
    fails, because a pod has no Google identity. Both are the lesson.
-4. **A post-mortem** ([postmortem_template.md](postmortem_template.md)): what Terraform managed
+4. **A review of another agent's pull request** ([review/main.tf](review/main.tf)): a
+   complete, valid Terraform for the same stack with **three planted faults** — one costs money,
+   one over-grants, one fails silently. You find them before they reach a project.
+5. **A supervision log** ([supervision_template.md](supervision_template.md)): every approval
+   the agent asked for and what you decided, the 403 moment, what it got wrong, what you did by
+   hand, and where you would now draw the line.
+6. **A post-mortem** ([postmortem_template.md](postmortem_template.md)): what Terraform managed
    and what it deliberately did not, what broke, why the service scaled the way it did, a
    *costed* GKE Autopilot vs Cloud Run comparison at 1× and 1,000× load, and what breaks first
    at 1,000×.
-5. **Teardown, proven**, and a 15-minute demo — apply from zero on stage, destroy on stage.
+7. **Teardown by hand, proven**, and a 15-minute demo — the agent applies from zero on stage
+   while you narrate the approvals; you destroy on stage.
 
 ```
+ you ──► policy.json (auto / confirm / forbidden) ──► agent, running as agent-operator (no IAM admin)
+                                                        │
+   SPEC.md ─────────────────────────────────────────────┤ writes terraform/, runs plan  (auto)
+                                                        │ asks: apply?                (you: yes)
+                                                        │ 403 on IAM binding ── asks  (you decide)
+                                                        ▼
 terraform apply ──► APIs · SA + roles · Cloud Run "chat-tf" · BigQuery (tfidf ← Parquet) · alert · log metric · log sink
       │                                          ▲
       │        loadtest.py ─── 20 clients ───────┘ ───► Monitoring: instance_count peaks at 3
@@ -46,12 +78,19 @@ terraform apply ──► APIs · SA + roles · Cloud Run "chat-tf" · BigQuery 
       └── NOT managed: bucket + artifacts, Firestore DB, the image      (data outlives infrastructure)
 
 kind create cluster ──► Deployment (2 pods) ──► Service :30080 ──► two instance ids; /chat has no identity
+
+review/main.tf (PR #12, by another agent) ──► you find: min_instances=1 · dataViewer · silent sink
+terraform destroy ──► by you, never the agent
 ```
 
 ---
 
 ## Background reading (study before the tasks)
 
+- **Gemini CLI** — running an agent in Cloud Shell, approval prompts, settings:
+  <https://github.com/google-gemini/gemini-cli>
+- **Service account impersonation** (no key files):
+  <https://cloud.google.com/docs/authentication/use-service-account-impersonation>
 - **Terraform on Google Cloud** — the google provider, `google_cloud_run_v2_service`,
   `google_bigquery_job`, `google_logging_project_sink`:
   <https://registry.terraform.io/providers/hashicorp/google/latest/docs>
@@ -69,16 +108,21 @@ kind create cluster ──► Deployment (2 pods) ──► Service :30080 ─�
 
 ## How it's graded
 
-- **Offline static checks** parse your `terraform/*.tf` and `k8s/deployment.yaml` — the TODO
-  blocks declare what Phases 4–5 deployed by hand (env, scaling, custom role, alert filter, sink
-  filter, replicas, probe, resources).
+- **Offline static checks** parse your `terraform/*.tf` and `k8s/deployment.yaml` — whoever
+  wrote them, they must declare what `SPEC.md` requires (env, scaling, custom role, alert
+  filter, sink filter, replicas, probe, resources) — and `agent/policy.json` (destroy and delete
+  forbidden, apply needs approval, plan automatic).
 - **Live checks** curl the Terraform-managed service while it exists (they skip once your report
   records the destroy — so push once *before* destroying).
 - **Report checks** read `submission/phase7_report.json`, built in four stages by
   `make_report.py`: the apply (resource types, health), the load test (≥ 500 requests, sane
   percentiles, **peak instances ≥ 2**), the Kubernetes rollout (2/2 ready, revision ≥ 2, ≥ 2
   distinct pods answering), and the destroy (0 resources left, URL dead).
-- The **post-mortem** and the **demo** are assessed by the instructor.
+- **Writeup structure checks**: the supervision log has every slot filled and ≥ 4 approval
+  rows including a refusal; the review names three faults with a fix each. A hidden test checks
+  the three faults are the *right* three.
+- The **review**, the **supervision log**, the **post-mortem** and the **demo** are assessed by
+  the instructor — that is where the understanding lives in this phase.
 
 ## Free-tier & safety
 

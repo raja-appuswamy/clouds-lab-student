@@ -1,0 +1,13 @@
+{
+  "_comment": "Starting point for Gemini CLI (place as .gemini/settings.json in the repo root, or merge into ~/.gemini/settings.json). The settings schema changes between Gemini CLI versions — check `gemini --help` and the docs for your version, and keep agent/policy.json as the source of truth. Default mode already asks before every shell command; excludeTools makes the forbidden ones impossible rather than merely prompted.",
+  "contextFileName": "phase-7-capstone/agent/GEMINI.md",
+  "excludeTools": [
+    "run_shell_command(terraform destroy)",
+    "run_shell_command(terraform apply -destroy)",
+    "run_shell_command(kubectl delete)",
+    "run_shell_command(kind delete)",
+    "run_shell_command(gcloud run services delete)",
+    "run_shell_command(gcloud storage rm)",
+    "run_shell_command(rm -rf)"
+  ]
+}
