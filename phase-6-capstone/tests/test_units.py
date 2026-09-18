@@ -1,9 +1,9 @@
-"""Phase 7 offline tests — the stack as code, read statically (no cloud, no terraform binary).
+"""Phase 6 offline tests — the stack as code, read statically (no cloud, no terraform binary).
 
 These parse your ``terraform/*.tf`` and ``k8s/deployment.yaml`` and check that the TODO blocks
 declare what Phases 4-5 deployed by hand. Run while editing:
 
-    python -m pytest phase-7-capstone/tests/test_units.py -p autograder.points -q
+    python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q
 
 (25 points: 20 for the stack as code, 5 for the agent's approval boundary.)
 """

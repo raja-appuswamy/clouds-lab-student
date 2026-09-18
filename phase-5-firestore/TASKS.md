@@ -155,8 +155,9 @@ python -m pytest phase-5-firestore/tests -p autograder.points -q   # full public
 
 ## Task 8 — Tear down (after you're graded)
 
-**Commands given in full — never guess at teardown.** Phase 6 uses Firestore and BigQuery
-directly and does not need the chat service or its custom role. Keep the Firestore data.
+**Commands given in full — never guess at teardown.** Phase 6 creates its own service (`chat-tf`)
+from the `chat:v2` image with Terraform; it needs the Firestore database and the image, not this
+service or its custom role. Keep the Firestore database.
 
 ```bash
 gcloud run services delete chat --region=$REGION --quiet

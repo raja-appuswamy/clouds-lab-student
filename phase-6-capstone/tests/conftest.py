@@ -1,4 +1,4 @@
-"""Test fixtures + import path setup for Phase 7."""
+"""Test fixtures + import path setup for Phase 6."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from pathlib import Path
 
 import pytest
 
-PHASE_DIR = Path(__file__).resolve().parents[1]        # phase-7-capstone/
+PHASE_DIR = Path(__file__).resolve().parents[1]        # phase-6-capstone/
 REPO_ROOT = PHASE_DIR.parent
 TF_DIR = PHASE_DIR / "terraform"
 K8S_DIR = PHASE_DIR / "k8s"
-REPORT_PATH = REPO_ROOT / "submission" / "phase7_report.json"
+REPORT_PATH = REPO_ROOT / "submission" / "phase6_report.json"
 
 for p in (str(REPO_ROOT), str(PHASE_DIR)):
     if p not in sys.path:
@@ -77,23 +77,23 @@ def filled(slots: dict[str, str], name: str) -> bool:
 
 @pytest.fixture(scope="session")
 def supervision() -> dict[str, str]:
-    return read_slots(REPO_ROOT / "submission" / "phase7_supervision.md")
+    return read_slots(REPO_ROOT / "submission" / "phase6_supervision.md")
 
 
 @pytest.fixture(scope="session")
 def review() -> dict[str, str]:
-    return read_slots(REPO_ROOT / "submission" / "phase7_review.md")
+    return read_slots(REPO_ROOT / "submission" / "phase6_review.md")
 
 
 @pytest.fixture(scope="session")
 def report() -> dict:
-    """Load submission/phase7_report.json (built stage by stage by make_report.py)."""
+    """Load submission/phase6_report.json (built stage by stage by make_report.py)."""
     if not REPORT_PATH.exists():
         pytest.fail(
-            "submission/phase7_report.json not found — run the make_report.py stages "
+            "submission/phase6_report.json not found — run the make_report.py stages "
             "(terraform, loadtest, k8s, destroyed) as TASKS.md describes."
         )
     try:
         return json.loads(REPORT_PATH.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
-        pytest.fail(f"phase7_report.json is not valid JSON: {exc}")
+        pytest.fail(f"phase6_report.json is not valid JSON: {exc}")

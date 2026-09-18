@@ -1,11 +1,11 @@
-"""Build submission/phase7_report.json in stages, as the capstone progresses (provided).
+"""Build submission/phase6_report.json in stages, as the capstone progresses (provided).
 
 Each subcommand adds one section; run them in this order (TASKS.md says when):
 
-    python phase-7-capstone/make_report.py terraform    # after `terraform apply`
-    python phase-7-capstone/make_report.py loadtest     # after loadtest.py
-    python phase-7-capstone/make_report.py k8s          # after the kind rollout
-    python phase-7-capstone/make_report.py destroyed    # after `terraform destroy`
+    python phase-6-capstone/make_report.py terraform    # after `terraform apply`
+    python phase-6-capstone/make_report.py loadtest     # after loadtest.py
+    python phase-6-capstone/make_report.py k8s          # after the kind rollout
+    python phase-6-capstone/make_report.py destroyed    # after `terraform destroy`
 
 `terraform` reads the state (`terraform show -json`) and the outputs — what was created, by
 type — and live-checks the service. `k8s` reads the Deployment from kubectl and hits the
@@ -27,8 +27,8 @@ from pathlib import Path
 PHASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PHASE_DIR.parent
 TF_DIR = PHASE_DIR / "terraform"
-REPORT_PATH = REPO_ROOT / "submission" / "phase7_report.json"
-LOADTEST_PATH = REPO_ROOT / "submission" / "phase7_loadtest.json"
+REPORT_PATH = REPO_ROOT / "submission" / "phase6_report.json"
+LOADTEST_PATH = REPO_ROOT / "submission" / "phase6_loadtest.json"
 
 
 def _run(cmd: list[str], cwd: Path | None = None) -> str:

@@ -1,4 +1,4 @@
-"""Phase 7 report tests — apply, load test, Kubernetes, destroy, and the two logs (public). (50 points.)"""
+"""Phase 6 report tests — apply, load test, Kubernetes, destroy, and the two logs (public). (50 points.)"""
 
 from __future__ import annotations
 
@@ -59,8 +59,8 @@ def test_stack_destroyed(report):
 
 @points(5)
 def test_supervision_log_complete(supervision):
-    """submission/phase7_supervision.md: every slot filled, >= 4 approvals including a refusal."""
-    assert supervision, "submission/phase7_supervision.md not found — copy supervision_template.md there (Task 11)"
+    """submission/phase6_supervision.md: every slot filled, >= 4 approvals including a refusal."""
+    assert supervision, "submission/phase6_supervision.md not found — copy supervision_template.md there (Task 11)"
     for slot in ("agent_tool", "agent_identity", "boundary_rationale", "approvals", "refusal",
                  "iam_403", "agent_mistake", "by_hand", "trust_boundary"):
         assert filled(supervision, slot), f"supervision log slot {slot!r} is still TODO"
@@ -75,8 +75,8 @@ def test_supervision_log_complete(supervision):
 
 @points(5)
 def test_review_complete(review):
-    """submission/phase7_review.md: three faults, each with where / what / fix, and a verdict."""
-    assert review, "submission/phase7_review.md not found — copy review_template.md there (Task 10)"
+    """submission/phase6_review.md: three faults, each with where / what / fix, and a verdict."""
+    assert review, "submission/phase6_review.md not found — copy review_template.md there (Task 10)"
     for letter in "abc":
         for part in ("where", "what", "fix"):
             assert filled(review, f"fault_{letter}_{part}"), f"review slot fault_{letter}_{part} is still TODO"

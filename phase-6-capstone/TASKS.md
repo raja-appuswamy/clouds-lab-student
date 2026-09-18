@@ -1,11 +1,11 @@
-# Phase 7 — Tasks & Deliverables
+# Phase 6 — Tasks & Deliverables
 
 Do everything in **Google Cloud Shell**. Read [README.md](README.md) and [SPEC.md](SPEC.md)
-first. Two weeks: Tasks 1–6 (identity, boundary, the agent builds and applies, load test,
-logs) in the first; Tasks 7–14 (Kubernetes, the review, the logs, teardown, demo) in the second.
+first. Two halves: Tasks 1–6 (identity, boundary, the agent builds and applies, load test,
+logs), then Tasks 7–14 (Kubernetes, the review, the logs, teardown, demo).
 
-> **How this task sheet differs from the others.** Phases 0–6 withheld the `gcloud` commands
-> because you were learning the primitives. In Phase 7 you are learning something else: to
+> **How this task sheet differs from the others.** Phases 0–5 withheld the `gcloud` commands
+> because you were learning the primitives. In Phase 6 you are learning something else: to
 > **supervise an AI agent that operates your stack** — one that writes the Terraform, runs the
 > plan/apply loop, drives `kubectl`, reads errors and retries. So the commands are *its* job,
 > and yours is to decide what it may do, watch what it does, catch what it gets wrong, and
@@ -13,7 +13,7 @@ logs) in the first; Tasks 7–14 (Kubernetes, the review, the logs, teardown, de
 >
 > Where a command is for **you** rather than the agent — giving it an identity, running the
 > destroy — it is given in full (agent tooling is not in the Google Cloud track). Where the
-> agent gets stuck, *you* still know the primitives: that is the point of the six phases
+> agent gets stuck, *you* still know the primitives: that is the point of the five phases
 > before this one.
 
 **The agent.** [Gemini CLI](https://github.com/google-gemini/gemini-cli) runs in Cloud Shell,
@@ -31,10 +31,10 @@ export PROJECT=$(gcloud config get-value project)
 export REGION=us-central1
 export IMAGE=$REGION-docker.pkg.dev/$PROJECT/eurecomgpt/chat:v2      # the Phase-5 image
 export AGENT_SA=agent-operator@$PROJECT.iam.gserviceaccount.com
-cd phase-7-capstone/terraform && cp -n terraform.tfvars.example terraform.tfvars && cd -
+cd phase-6-capstone/terraform && cp -n terraform.tfvars.example terraform.tfvars && cd -
 ```
 
-Edit `phase-7-capstone/terraform/terraform.tfvars` with your project id, `$IMAGE`, the alert
+Edit `phase-6-capstone/terraform/terraform.tfvars` with your project id, `$IMAGE`, the alert
 e-mail, and `impersonate = "<AGENT_SA>"`. It is git-ignored.
 
 ---
@@ -63,7 +63,7 @@ Deliberately **not** granted: `roles/owner`, `roles/editor`, and
 
 ```bash
 gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com iamcredentials.googleapis.com
-gcloud iam service-accounts create agent-operator --display-name="Phase 7 agent operator"
+gcloud iam service-accounts create agent-operator --display-name="Phase 6 agent operator"
 for ROLE in roles/serviceusage.serviceUsageAdmin roles/iam.serviceAccountAdmin roles/iam.serviceAccountUser \
             roles/iam.roleAdmin roles/run.admin roles/bigquery.admin roles/monitoring.editor \
             roles/logging.configWriter roles/logging.admin roles/storage.objectViewer; do
@@ -100,7 +100,7 @@ approval, `plan` must be automatic. Beyond that the boundary is yours to argue f
 supervision log.
 
 ```bash
-python -m pytest phase-7-capstone/tests/test_units.py -p autograder.points -q -k policy
+python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q -k policy
 ```
 
 **Taught in.** Lecture 2 (what a container may do is decided outside it) — the same idea,
@@ -117,12 +117,12 @@ recognisable from Phases 4–5 — including the BigQuery *load job* that rebuil
 table from your Phase-3 Parquet.
 
 Start the agent in the repo root, point it at the brief, and give it the task in one sentence
-("Complete phase-7-capstone/terraform to satisfy SPEC.md and get `terraform plan` clean").
+("Complete phase-6-capstone/terraform to satisfy SPEC.md and get `terraform plan` clean").
 Then **watch**. Every command it proposes, every error it reads, every fix it tries — this is
 the loop you will describe in the supervision log. The offline tests are its (and your) check:
 
 ```bash
-python -m pytest phase-7-capstone/tests/test_units.py -p autograder.points -q
+python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q
 ```
 
 **Taught in.** Terraform badge · Elastic M3 — you can read a plan; now you read one you did not
@@ -150,7 +150,7 @@ a defensible one, and the supervision log asks for yours.
 When apply completes, record it:
 
 ```bash
-python phase-7-capstone/make_report.py terraform
+python phase-6-capstone/make_report.py terraform
 ```
 
 **Taught in.** Core Services M1 — the difference between *can* and *should*.
@@ -164,8 +164,8 @@ reply; the CI live tests hit the same URL.
 ## Task 5 — Load test, and watch it scale
 
 ```bash
-python phase-7-capstone/loadtest.py --url $CHAT_URL --clients 20 --seconds 120
-python phase-7-capstone/make_report.py loadtest
+python phase-6-capstone/loadtest.py --url $CHAT_URL --clients 20 --seconds 120
+python phase-6-capstone/make_report.py loadtest
 ```
 
 (`CHAT_URL` is `terraform output -raw chat_url`; the agent can run this too — it is read-only
@@ -249,7 +249,7 @@ Try `curl -X POST localhost:30080/chat …` too. It fails — and the post-morte
 **Verified by.**
 
 ```bash
-python phase-7-capstone/make_report.py k8s
+python phase-6-capstone/make_report.py k8s
 ```
 
 reads the Deployment, the Service, and probes the Service twenty times counting distinct pods:
@@ -266,7 +266,7 @@ contains **three faults** a careless reviewer would approve: one that **costs mo
 line — do not apply it — and fill in the review:
 
 ```bash
-cp phase-7-capstone/review_template.md submission/phase7_review.md
+cp phase-6-capstone/review_template.md submission/phase6_review.md
 ```
 
 For each fault: where, what is wrong and what it would have cost or exposed, and the corrected
@@ -284,7 +284,7 @@ you found the right three.
 ## Task 11 — The supervision log
 
 ```bash
-cp phase-7-capstone/supervision_template.md submission/phase7_supervision.md
+cp phase-6-capstone/supervision_template.md submission/phase6_supervision.md
 ```
 
 You should have been filling this since Task 2. It asks for: which agent and how you ran it;
@@ -301,7 +301,7 @@ rows with a refusal; the instructor reads it, and the demo asks about it.
 ## Task 12 — The post-mortem
 
 ```bash
-cp phase-7-capstone/postmortem_template.md submission/phase7_postmortem.md
+cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
 ```
 
 Fill every slot after Task 13 (section 1 needs the destroy count). It asks what Terraform
@@ -320,9 +320,9 @@ the action whose blast radius you cannot take back, so it stays with the human. 
 bucket, Firestore, images — remains.
 
 ```bash
-cd phase-7-capstone/terraform && terraform destroy && cd -
+cd phase-6-capstone/terraform && terraform destroy && cd -
 kind delete cluster --name eurecomgpt
-python phase-7-capstone/make_report.py destroyed
+python phase-6-capstone/make_report.py destroyed
 gcloud config unset auth/impersonate_service_account       # you are yourself again
 ```
 
@@ -338,10 +338,10 @@ this is recorded.
 
 ## Task 14 — Commit, push, demo
 
-Commit `phase-7-capstone/terraform/*.tf`, `phase-7-capstone/k8s/deployment.yaml`,
-`phase-7-capstone/agent/policy.json`, `submission/phase7_report.json`,
-`submission/phase7_loadtest.json`, `submission/phase7_review.md`,
-`submission/phase7_supervision.md` and `submission/phase7_postmortem.md`, then push. **Push once
+Commit `phase-6-capstone/terraform/*.tf`, `phase-6-capstone/k8s/deployment.yaml`,
+`phase-6-capstone/agent/policy.json`, `submission/phase6_report.json`,
+`submission/phase6_loadtest.json`, `submission/phase6_review.md`,
+`submission/phase6_supervision.md` and `submission/phase6_postmortem.md`, then push. **Push once
 before Task 13 too** — that is the run in which the live tests see your service.
 
 **Demo (15 minutes per group).** The agent applies from zero, live, while you narrate what you
@@ -355,11 +355,11 @@ by hand, on stage.
 
 1. Completed `terraform/*.tf` and `k8s/deployment.yaml` (by the agent, reviewed by you) and
    `agent/policy.json` (by you).
-2. `submission/phase7_report.json` with all four stages, plus `submission/phase7_loadtest.json`.
-3. `submission/phase7_review.md` — the three faults in PR #12.
-4. `submission/phase7_supervision.md` — the log.
-5. `submission/phase7_postmortem.md`.
-6. A **green** `autograde-phase-7` CI run — one *before* the destroy (live tests) and the final
+2. `submission/phase6_report.json` with all four stages, plus `submission/phase6_loadtest.json`.
+3. `submission/phase6_review.md` — the three faults in PR #12.
+4. `submission/phase6_supervision.md` — the log.
+5. `submission/phase6_postmortem.md`.
+6. A **green** `autograde-phase-6` CI run — one *before* the destroy (live tests) and the final
    one after it.
 7. The 15-minute demo.
 
@@ -370,10 +370,10 @@ the demo, which the instructor assesses. Run the public suite yourself before yo
 each `make_report.py` stage and once the three writeups are filled):
 
 ```bash
-python -m pytest phase-7-capstone/tests -p autograder.points -q
+python -m pytest phase-6-capstone/tests -p autograder.points -q
 ```
 
-While the agent is editing Terraform and manifests, `phase-7-capstone/tests/test_units.py`
+While the agent is editing Terraform and manifests, `phase-6-capstone/tests/test_units.py`
 alone is enough — it needs no cloud resources. The instructor also runs checks that are not in
 your repo, so a green public run is necessary but not sufficient.
 

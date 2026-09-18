@@ -1,4 +1,4 @@
-# Phase 7 — Capstone: supervise an agent operating your stack
+# Phase 6 — Capstone: supervise an agent operating your stack
 
 > New to the lab, or unsure how this phase fits? Read the **[project map](../README.md)** first — it shows what every phase builds and which later phases depend on it.
 
@@ -9,23 +9,20 @@ it may do without asking, watch it work, catch what it gets wrong, review anothe
 pull request for planted faults, destroy everything yourself, and demo it. The stack it builds
 is graded exactly as a hand-built one would be; how you supervised is graded as well.
 
-**Lecture map:** synthesis — no new lecture. Lecture 1 (elasticity economics) · Lecture 2
-(containers, revisions) · Lecture 7 (the store you now recreate as code).
-
 **Environment: Google Cloud Shell** (Boost mode for the Kubernetes part), with an agent that
 executes commands under approval — Gemini CLI has a free tier and runs there; any equivalent is
 fine, and the phase can be done without one. **Prerequisites:** Phases 2–5 artifacts still in
 place — `model.safetensors` and `tfidf.parquet` in your bucket, the Firestore database, the
-Phase-5 image `chat:v2` in Artifact Registry. Two weeks.
+Phase-5 image `chat:v2` in Artifact Registry.
 
 ### Why the rules change here
 
-Phases 0–6 withhold commands and code because you were learning the primitives — there is no
+Phases 0–5 withhold commands and code because you were learning the primitives — there is no
 substitute for having typed `gcloud run deploy` and read its errors yourself. By now that is
 done. The skill this phase teaches is the one that comes *after* the primitives: specifying
 precisely, delegating the toil, and reviewing what comes back for cost, security and
 correctness while remaining accountable for it. That is what operating cloud systems looks
-like now, and it is only teachable to someone who already has Phases 1–6 in their hands.
+like now, and it is only teachable to someone who already has Phases 1–5 in their hands.
 
 ---
 
@@ -114,7 +111,7 @@ terraform destroy ──► by you, never the agent
   forbidden, apply needs approval, plan automatic).
 - **Live checks** curl the Terraform-managed service while it exists (they skip once your report
   records the destroy — so push once *before* destroying).
-- **Report checks** read `submission/phase7_report.json`, built in four stages by
+- **Report checks** read `submission/phase6_report.json`, built in four stages by
   `make_report.py`: the apply (resource types, health), the load test (≥ 500 requests, sane
   percentiles, **peak instances ≥ 2**), the Kubernetes rollout (2/2 ready, revision ≥ 2, ≥ 2
   distinct pods answering), and the destroy (0 resources left, URL dead).

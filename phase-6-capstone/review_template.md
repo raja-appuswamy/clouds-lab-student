@@ -1,9 +1,9 @@
-# Phase 7 — Review of PR #12 (an agent's Terraform)
+# Phase 6 — Review of PR #12 (an agent's Terraform)
 
-Copy this file to `submission/phase7_review.md`, fill in every answer slot, and commit it:
+Copy this file to `submission/phase6_review.md`, fill in every answer slot, and commit it:
 
 ```bash
-cp phase-7-capstone/review_template.md submission/phase7_review.md
+cp phase-6-capstone/review_template.md submission/phase6_review.md
 ```
 
 **How to fill it in.** Each answer sits between a pair of `<!--answer:...-->` markers. Replace

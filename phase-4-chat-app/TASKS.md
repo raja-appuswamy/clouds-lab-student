@@ -121,7 +121,7 @@ Note the `"store": "memory"` and `"instance": "..."` fields in the reply — you
 `roles/bigquery.dataViewer` is far broader than this service needs — it can read every table
 in the project. Replace it with a role that grants only what the chat server actually uses:
 `bigquery.tables.get` and `bigquery.tables.getData`. The app does not need this step to work;
-it is here because least privilege is the one IAM habit worth practising by hand, and Phase 7
+it is here because least privilege is the one IAM habit worth practising by hand, and Phase 6
 turns the same role into Terraform.
 
 **Objective.** A **custom IAM role** `chatBigQueryReader` with exactly those two permissions,

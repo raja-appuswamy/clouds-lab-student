@@ -1,6 +1,6 @@
 # EurecomGPT serving stack — specification
 
-This is the brief. In Phases 4–5 you built this stack by hand; in Phase 7 an AI agent builds
+This is the brief. In Phases 4–5 you built this stack by hand; in Phase 6 an AI agent builds
 it for you from this document, under your supervision. Give the agent this file (the
 `agent/` folder wires it in) and hold it to every line. Anything not stated here is the agent's
 choice — and yours to review.

@@ -30,7 +30,7 @@ def test_send_message_appends_and_counts():
 
 @points(12)
 def test_counter_matches_message_count():
-    # The invariant Phase 6A relies on: the counter never drifts from the message count.
+    # The invariant the whole store relies on: the counter never drifts from the message count.
     db = FakeFirestore()
     fs.create_session(db, "s")
     for i in range(10):

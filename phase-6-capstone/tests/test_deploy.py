@@ -1,4 +1,4 @@
-"""Phase 7 live tests — the Terraform-managed service, while it is up.
+"""Phase 6 live tests — the Terraform-managed service, while it is up.
 
 Reads ``chat_url`` (Terraform's output, recorded by ``make_report.py terraform``) and curls it.
 These run in your CI **between** `terraform apply` and `terraform destroy` — once you have

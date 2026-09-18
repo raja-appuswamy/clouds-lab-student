@@ -5,7 +5,7 @@
 **Goal:** give the Phase-4 chat app a memory that outlives its containers. You build the
 Firestore data model + a **transactional message-send**, then redeploy the *same* chat server
 with Firestore as its store — and repeat Phase 4's forget-experiment with the opposite result.
-Phase 6 runs its 2PC, consistency and Raft work over this exact schema.
+Phase 6's agent-built stack runs the same server against this same database.
 
 **Lecture map:** Lecture 7 (OLTP, ACID, transaction concurrency control) · Lecture 2 (Cloud Run
 revisions).
@@ -75,7 +75,7 @@ its job. The module docstring in `firestore_store.py` shows the same chain as a 
   <https://cloud.google.com/run/docs/managing/revisions>
 
 Be able to explain why the counter update must be inside a transaction, and what "lost update"
-means — you'll reproduce it in Phase 6A.
+means — the ACID demo in this phase reproduces it on real Firestore.
 
 ---
 
@@ -95,6 +95,6 @@ means — you'll reproduce it in Phase 6A.
 
 - Firestore Always-Free is 50k reads / 20k writes per day — this phase uses a few dozen.
 - The redeployed Cloud Run service stays at `min-instances=0` (≈ €0 idle). Tear it down after
-  grading (TASKS.md); keep the Firestore data for Phase 6.
+  grading (TASKS.md); keep the Firestore database — Phase 6 deploys against it.
 
 Step-by-step is in **[TASKS.md](TASKS.md)**.

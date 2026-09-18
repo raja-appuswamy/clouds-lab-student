@@ -2,8 +2,8 @@
 
 This is what makes the chat app remember. Phase 4's server kept turns in a dict inside the
 container and you watched them vanish; here the same server gets this module instead
-(``STORE_BACKEND=firestore``), and Phase 6 builds its 2PC / consistency / Raft work on the
-same schema.
+(``STORE_BACKEND=firestore``), and Phase 6's Terraform rebuilds the service on top of this
+same database.
 
 Data model:
     sessions/{session_id}                     -> {id, created_at, message_count}

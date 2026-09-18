@@ -1,9 +1,9 @@
-# Phase 7 — Capstone Post-mortem
+# Phase 6 — Capstone Post-mortem
 
-Copy this file to `submission/phase7_postmortem.md`, fill in every answer slot, and commit it:
+Copy this file to `submission/phase6_postmortem.md`, fill in every answer slot, and commit it:
 
 ```bash
-cp phase-7-capstone/postmortem_template.md submission/phase7_postmortem.md
+cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
 ```
 
 **How to fill it in.** Each answer sits between a pair of `<!--answer:...-->` markers. Replace
@@ -11,7 +11,7 @@ the `TODO` line with your answer — **leave the markers themselves untouched**,
 grader finds your answers. Anything you write outside the markers is ignored, so add extra
 prose, tables or screenshots freely — this is also the document you present from on demo day.
 
-Numbers in section 1 must **match `submission/phase7_report.json`** — copy them across, do not
+Numbers in section 1 must **match `submission/phase6_report.json`** — copy them across, do not
 retype from memory; they are checked against it.
 
 ---

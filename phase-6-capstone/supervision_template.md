@@ -1,9 +1,9 @@
-# Phase 7 — Supervision Log
+# Phase 6 — Supervision Log
 
-Copy this file to `submission/phase7_supervision.md`, fill in every answer slot, and commit it:
+Copy this file to `submission/phase6_supervision.md`, fill in every answer slot, and commit it:
 
 ```bash
-cp phase-7-capstone/supervision_template.md submission/phase7_supervision.md
+cp phase-6-capstone/supervision_template.md submission/phase6_supervision.md
 ```
 
 **How to fill it in.** Each answer sits between a pair of `<!--answer:...-->` markers. Replace

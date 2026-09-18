@@ -1,6 +1,6 @@
 """Load test the Terraform-managed chat service and watch it scale (provided).
 
-    python phase-7-capstone/loadtest.py --url https://chat-tf-xxx.run.app --clients 20 --seconds 120
+    python phase-6-capstone/loadtest.py --url https://chat-tf-xxx.run.app --clients 20 --seconds 120
 
 `clients` threads each loop for `seconds`, hitting the two cheap endpoints (``/health`` and
 ``/sessions/<id>/messages``) plus one ``/chat`` every 25 requests, so the service does real
@@ -13,7 +13,7 @@ Then the script asks **Cloud Monitoring** what Cloud Run did about it: the maxim
 it climb to the ``max_instance_count`` you set — that is elasticity, measured rather than
 asserted. Monitoring data lags by a minute or two, so the script waits before querying.
 
-Writes ``submission/phase7_loadtest.json``; make_report.py folds it into the report.
+Writes ``submission/phase6_loadtest.json``; make_report.py folds it into the report.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-OUT_PATH = REPO_ROOT / "submission" / "phase7_loadtest.json"
+OUT_PATH = REPO_ROOT / "submission" / "phase6_loadtest.json"
 
 
 def _one(url: str, body: dict | None = None) -> tuple[int, float]:
