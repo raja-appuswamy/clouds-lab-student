@@ -48,7 +48,7 @@ deployment skills everything else assumes.
 | **3 — Index the corpus** | A word count run as a real **MapReduce job** — Cloud Run function workers, Cloud Storage shuffle, Cloud Workflows job tracker — then a **TF-IDF index** built with Spark | **BigQuery table `eurecomgpt.tfidf`** (+ the Parquet in your bucket) | Phase 4 queries it on every user message (`BQ_TABLE`) |
 | **4 — The chat app** | A FastAPI server on Cloud Run that retrieves (Phase 3) → generates (Phase 2) → keeps the conversation *in the container's memory*, plus the browser UI on Cloud Storage. Ends with an experiment: force a fresh container and watch the history vanish | **A public chat URL** — the working product, minus a memory | Phase 5 redeploys it with a real store; Phase 6 rebuilds it as code |
 | **5 — Remember conversations** | The Firestore schema `sessions/{id}/messages` and a **transactional** `send_message` that cannot lose updates; the same chat server redeployed with Firestore as its store — and the Phase-4 experiment repeated, with the opposite result | The **`firestore_store`** module and the schema, and a chat app that remembers | Phase 6's Terraform deploys the same server against the same database |
-| **6 — Capstone** | **Supervise an AI agent** operating your stack: you give it a bounded identity and an approval boundary; it writes the Terraform from a spec — service, identity, data plane, alert, log sink — and runs the plan/apply loop under your approval; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell); a **review** of another agent's Terraform with three planted faults; `terraform destroy` — by you | The supervision log, the review, the post-mortem, the demo | — |
+| **6 — Capstone** | **Supervise an AI agent** operating your stack: you give it a bounded identity and an approval boundary; it writes the Terraform from a spec — service, identity, data plane, alert, log sink — and runs the plan/apply loop under your approval; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell); a **review** of another agent's Terraform with three planted faults; `terraform destroy` — by you | The supervision log, the review, the post-mortem | — |
 
 Two things follow from the table that are easy to miss when you are inside one phase:
 
@@ -102,18 +102,6 @@ Everything you write lives in **one Git repository** — this one. Each phase is
 reports go in `submission/`; pushing runs that phase's autograder in your own GitHub Actions.
 Colab clones this repo to get your code, so **commit and push before you open a notebook**.
 
-## Using AI: reader, not operator — until Phase 6
-
-You may use an AI assistant to **understand** anything in this repository: explain provided
-code, read a stack trace, decode a `gcloud` error, walk you through the workflow YAML. That
-use strengthens the lab. In Phases 0–5 you may not use it to **produce** the graded work — the
-withheld `gcloud` commands, the functions marked `TODO`, the writeups — because those phases
-exist to get the primitives into *your* hands, and an agent typing them defeats the purpose in
-a way no grader can detect but you will feel in Phase 6. Phase 6 lifts the rule deliberately:
-there, an agent operates your stack and the graded skill is how you supervise it. The line is
-the same one a good engineer draws at work: use the tool to learn faster; do not let it learn
-instead of you.
-
 ## How you are graded, in one paragraph
 
 Every phase ships **public tests** you can run yourself (`python -m pytest <phase>/tests -p
@@ -122,7 +110,7 @@ phases, live checks against *your own* deployed endpoints and public artifacts. 
 adds hidden tests and reads the writeups. A green CI badge is necessary, not sufficient.
 Details per phase are in each `TASKS.md` under *How your work is checked*.
 
-## The one rule about money
+## Billing and budget
 
 The lab is designed to cost **€0**. Phase 0 has you set a budget alert at €0.01; if it ever
 fires, stop and find out why before doing anything else. The two easy ways to spend money by

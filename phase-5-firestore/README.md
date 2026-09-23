@@ -52,7 +52,7 @@ Where your function sits in the path a turn takes from the server to the databas
 | 1 | `phase-4-chat-app/server.py` `chat()` | after generating the reply, calls `store_turn` twice — user turn, then assistant turn |
 | 2 | `phase-4-chat-app/store.py` `FirestoreStore.store_turn()` | one line: `firestore_store.send_message(db, session_id, role, text)` |
 | 3 | [firestore_store.py](firestore_store.py) `send_message()` — provided | builds `session_ref` (`sessions/{id}`) and a fresh `msg_ref` (`sessions/{id}/messages/{auto_id}`, no document yet), stamps `now` |
-| 4 | [firestore_store.py](firestore_store.py) `run_in_transaction()` — provided | opens a Firestore transaction and hands your function to the client library |
+| 4 | [firestore_store.py](firestore_store.py) `run_in_transaction()` — provided | opens a Firestore transaction and hands your function to the client library; if Firestore aborts the commit because another transaction touched the same session (`ABORTED: cross-transaction contention`), it waits — exponential backoff with jitter — and starts over |
 | 5 | **[firestore_store.py](firestore_store.py) `_apply()`** — *yours* | inside the transaction: read the session's `message_count`, `set` the message document, `update` the counter to +1, return the message id. **May be called more than once** — if another writer touched the session first, Firestore aborts and retries from the top |
 | 6 | Firestore commit | both writes land, or neither |
 

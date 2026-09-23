@@ -6,7 +6,7 @@
 engineer accountable for it. The agent writes the Terraform from a spec, runs the plan/apply
 loop, drives `kubectl`, reads errors and retries. You give it a bounded identity, decide what
 it may do without asking, watch it work, catch what it gets wrong, review another agent's
-pull request for planted faults, destroy everything yourself, and demo it. The stack it builds
+pull request for planted faults, and destroy everything yourself. The stack it builds
 is graded exactly as a hand-built one would be; how you supervised is graded as well.
 
 **Environment: Google Cloud Shell** (Boost mode for the Kubernetes part), with an agent that
@@ -58,8 +58,8 @@ like now, and it is only teachable to someone who already has Phases 1–5 in th
    and what it deliberately did not, what broke, why the service scaled the way it did, a
    *costed* GKE Autopilot vs Cloud Run comparison at 1× and 1,000× load, and what breaks first
    at 1,000×.
-7. **Teardown by hand, proven**, and a 15-minute demo — the agent applies from zero on stage
-   while you narrate the approvals; you destroy on stage.
+7. **Teardown by hand, proven** — `terraform destroy` is yours, not the agent's, and the
+   report records that nothing is left.
 
 ```
  you ──► policy.json (auto / confirm / forbidden) ──► agent, running as agent-operator (no IAM admin)
@@ -118,8 +118,8 @@ terraform destroy ──► by you, never the agent
 - **Writeup structure checks**: the supervision log has every slot filled and ≥ 4 approval
   rows including a refusal; the review names three faults with a fix each. A hidden test checks
   the three faults are the *right* three.
-- The **review**, the **supervision log**, the **post-mortem** and the **demo** are assessed by
-  the instructor — that is where the understanding lives in this phase.
+- The **review**, the **supervision log** and the **post-mortem** are assessed by the
+  instructor — that is where the understanding lives in this phase.
 
 ## Free-tier & safety
 

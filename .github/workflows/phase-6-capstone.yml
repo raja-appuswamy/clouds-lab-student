@@ -29,7 +29,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt python-hcl2 pyyaml
+        run: pip install -r requirements.txt -r phase-6-capstone/requirements.txt
 
       - name: Run autograder tests (Terraform + k8s static checks, live service, report)
         run: >

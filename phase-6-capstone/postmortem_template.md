@@ -9,7 +9,7 @@ cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
 **How to fill it in.** Each answer sits between a pair of `<!--answer:...-->` markers. Replace
 the `TODO` line with your answer — **leave the markers themselves untouched**, they are how the
 grader finds your answers. Anything you write outside the markers is ignored, so add extra
-prose, tables or screenshots freely — this is also the document you present from on demo day.
+prose, tables or screenshots freely.
 
 Numbers in section 1 must **match `submission/phase6_report.json`** — copy them across, do not
 retype from memory; they are checked against it.

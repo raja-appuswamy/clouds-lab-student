@@ -2,4 +2,7 @@
 project     = "my-project-id"
 image       = "us-central1-docker.pkg.dev/my-project-id/eurecomgpt/chat:v2"
 alert_email = "you@eurecom.fr"
-impersonate = "agent-operator@my-project-id.iam.gserviceaccount.com"   # Task 1; remove the line to act as yourself
+
+# The service account Terraform acts as (Task 1). Every API call it makes is authenticated
+# as this identity, not yours, which is what makes the agent bounded. Required for this phase.
+impersonate = "agent-operator@my-project-id.iam.gserviceaccount.com"

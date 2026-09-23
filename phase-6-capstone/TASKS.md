@@ -2,7 +2,7 @@
 
 Do everything in **Google Cloud Shell**. Read [README.md](README.md) and [SPEC.md](SPEC.md)
 first. Two halves: Tasks 1–6 (identity, boundary, the agent builds and applies, load test,
-logs), then Tasks 7–14 (Kubernetes, the review, the logs, teardown, demo).
+logs), then Tasks 7–14 (Kubernetes, the review, the logs, teardown, submission).
 
 > **How this task sheet differs from the others.** Phases 0–5 withheld the `gcloud` commands
 > because you were learning the primitives. In Phase 6 you are learning something else: to
@@ -24,7 +24,15 @@ valid plan after 30 minutes on a task, do that step yourself and say so in the s
 The whole phase can be done without an agent; the log then says so and the phase is graded
 on its outcomes.
 
-Set these once per shell session:
+**Install the phase's Python dependencies once**, into the virtualenv you made in Phase 0 —
+the autograder parses your Terraform with `python-hcl2` and your manifests with `pyyaml`, and
+without them every static test errors out with `ModuleNotFoundError`:
+
+```bash
+pip install -r requirements.txt -r phase-6-capstone/requirements.txt
+```
+
+Then set these once per shell session:
 
 ```bash
 export PROJECT=$(gcloud config get-value project)
@@ -100,7 +108,7 @@ approval, `plan` must be automatic. Beyond that the boundary is yours to argue f
 supervision log.
 
 ```bash
-python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q -k policy
+python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q -k agent_policy
 ```
 
 **Taught in.** Lecture 2 (what a container may do is decided outside it) — the same idea,
@@ -119,7 +127,9 @@ table from your Phase-3 Parquet.
 Start the agent in the repo root, point it at the brief, and give it the task in one sentence
 ("Complete phase-6-capstone/terraform to satisfy SPEC.md and get `terraform plan` clean").
 Then **watch**. Every command it proposes, every error it reads, every fix it tries — this is
-the loop you will describe in the supervision log. The offline tests are its (and your) check:
+the loop you will describe in the supervision log. The offline tests are its (and your) check —
+they need no cloud resources, and **they fail until the agent has written the Terraform**, which
+is exactly what makes them a to-do list it can work against:
 
 ```bash
 python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q
@@ -294,7 +304,7 @@ decided; one thing the agent got wrong and how you caught it; one thing you did 
 where, now, you would draw the line between unsupervised, approved, and never.
 
 **Verified by.** The public test checks every slot is filled and the approvals table has ≥ 4
-rows with a refusal; the instructor reads it, and the demo asks about it.
+rows with a refusal; the instructor reads it.
 
 ---
 
@@ -336,20 +346,13 @@ this is recorded.
 
 ---
 
-## Task 14 — Commit, push, demo
+## Task 14 — Commit and push
 
 Commit `phase-6-capstone/terraform/*.tf`, `phase-6-capstone/k8s/deployment.yaml`,
 `phase-6-capstone/agent/policy.json`, `submission/phase6_report.json`,
 `submission/phase6_loadtest.json`, `submission/phase6_review.md`,
 `submission/phase6_supervision.md` and `submission/phase6_postmortem.md`, then push. **Push once
 before Task 13 too** — that is the run in which the live tests see your service.
-
-**Demo (15 minutes per group).** The agent applies from zero, live, while you narrate what you
-approved and why (5 min, start it first) · the chat UI against the fresh URL (1 min) · the
-instance-count graph and your alert (2 min) · the kind rollout and the two instance ids (2 min)
-· the review: your three faults (2 min) · questions (3 min) — expect *"what would have happened
-if you had approved that?"* and *"why did you not give it Owner?"*. Then `terraform destroy`,
-by hand, on stage.
 
 ## Deliverables
 
@@ -361,12 +364,11 @@ by hand, on stage.
 5. `submission/phase6_postmortem.md`.
 6. A **green** `autograde-phase-6` CI run — one *before* the destroy (live tests) and the final
    one after it.
-7. The 15-minute demo.
 
 ## How your work is checked
 
-Your grade comes from the autograder, plus the review, the supervision log, the post-mortem and
-the demo, which the instructor assesses. Run the public suite yourself before you push (after
+Your grade comes from the autograder, plus the review, the supervision log and the post-mortem,
+which the instructor assesses. Run the public suite yourself before you push (after
 each `make_report.py` stage and once the three writeups are filled):
 
 ```bash

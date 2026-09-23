@@ -46,6 +46,8 @@ every turn goes through *your* transaction.
 from __future__ import annotations
 
 import datetime
+import random
+import time
 
 
 def _utcnow() -> str:
@@ -105,14 +107,35 @@ def _apply(transaction, session_ref, msg_ref, role: str, text: str, now: str) ->
     raise NotImplementedError("Phase 5: implement _apply()")
 
 
-def run_in_transaction(db, func):
-    """Run ``func(transaction)`` in a Firestore transaction — works on real + fake (provided)."""
+def run_in_transaction(db, func, *, rounds: int = 6):
+    """Run ``func(transaction)`` in a Firestore transaction — works on real + fake (provided).
+
+    Firestore lets only one of two transactions that touch the same document commit; the
+    others fail with ``ABORTED: cross-transaction contention`` and must start over. The client
+    library retries five times back to back, then gives up with
+    ``ValueError("Failed to commit transaction in 5 attempts")``. Twenty threads on one session
+    document exceed that easily, so this wraps the library in ``rounds`` further tries with
+    exponential backoff and jitter — the standard remedy for contention under optimistic
+    concurrency. Every retry re-runs ``func`` from the top, which is why ``_apply`` must contain
+    nothing but reads and writes through the transaction object.
+    """
     txn = db.transaction()
     if getattr(txn, "_fake", False):
         return func(txn)
-    from google.cloud import firestore  # imported lazily so offline tests need no GCP deps
+    from google.api_core import exceptions as gexc  # imported lazily so offline tests need no GCP deps
+    from google.cloud import firestore
 
-    return firestore.transactional(func)(txn)
+    delay = 0.05
+    for attempt in range(rounds):
+        try:
+            return firestore.transactional(func)(txn)
+        except (gexc.Aborted, ValueError) as exc:
+            gave_up = isinstance(exc, gexc.Aborted) or "Failed to commit transaction" in str(exc)
+            if not gave_up or attempt == rounds - 1:
+                raise
+            time.sleep(delay + random.uniform(0, delay))
+            delay = min(delay * 2, 2.0)
+            txn = db.transaction()
 
 
 def send_message(db, session_id: str, role: str, text: str, now: str | None = None) -> str:
