@@ -74,5 +74,9 @@ host↔device transfer overhead for small batches, when the GPU is starved.)
 - Only the **weights** (`model.safetensors`, a few MB) go to **Cloud Storage** (≪ 5 GB
   free). Make that one object public so grading can read it.
 - Checkpoint if Colab disconnects; the model is tiny so a full run is minutes on a GPU.
+- **Leave `model.safetensors` public until Phase 6 is graded.** Phases 4, 5 and 6 all serve
+  the model from that URL; deleting it breaks them.
 
-Step-by-step with commands is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+The `gcloud` commands are deliberately not given — you performed these operations in the Google
+Cloud modules named under each task.

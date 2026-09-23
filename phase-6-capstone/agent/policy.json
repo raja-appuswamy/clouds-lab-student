@@ -12,7 +12,8 @@
     "kubectl rollout status",
     "gcloud * list",
     "gcloud * describe",
-    "curl"
+    "curl",
+    "python -m pytest"
   ],
   "confirm": [
     "terraform apply",

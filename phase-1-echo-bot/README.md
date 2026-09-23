@@ -63,8 +63,12 @@ Key concepts to be able to explain afterwards:
 - Deploy Cloud Run and the Function with **`--min-instances=0`** so they cost ~€0 idle.
 - One `e2-micro` in `us-central1`/`us-west1`/`us-east1` is Always-Free 24×7 — use one of
   those regions. Keep only **one** VM.
-- **Keep all three deployments up until you are graded** (the CI live-curls them), then run
-  the **teardown** commands in [TASKS.md](TASKS.md) to free quota.
+- **Keep all three deployments up until your `autograde-phase-1` run is green** — that CI run
+  live-curls them and is your evidence. Then tear down the same day (TASKS.md Task 11): the
+  VM's external IP is the one thing here that bills.
 - Cloud Build (used to build the image) is free to 2,500 min/month — you'll use seconds.
 
-The concrete step-by-step, with every command, is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+The `gcloud` commands are deliberately not given — you performed these operations in the Google
+Cloud modules named under each task, and recalling them is the exercise. Teardown commands *are*
+given in full.

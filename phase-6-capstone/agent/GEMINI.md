@@ -19,3 +19,7 @@ you must satisfy every line of it.
 6. Do not invent provider attributes. If unsure of a field name, run `terraform validate` and
    read the error rather than guessing twice.
 7. Report in short, factual messages: what you ran, what happened, what you propose next.
+8. Explain every resource you write before moving on: what it creates, the line of `SPEC.md`
+   that requires it, the one attribute that would silently break it and the symptom that would
+   follow, and what it costs. Explain the choice, not the syntax — the engineer can read HCL.
+   Where the spec leaves something open, say so, and name the alternative you rejected.

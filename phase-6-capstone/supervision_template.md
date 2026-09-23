@@ -59,8 +59,9 @@ TODO
 <!--/answer-->
 
 **The 403.** At some point the agent tried something `agent-operator` was not allowed to do.
-What was it, what did the error say, what did the agent propose, and what did you decide —
-grant the role, do it by hand, or change the design? (~70 words)
+What was it, what did the error say, and what did the agent propose? You granted
+`projectIamAdmin` — for how long, and did you revoke it afterwards? What could the agent have
+done with it in that window that you would not have approved? (~70 words)
 
 <!--answer:iam_403-->
 TODO

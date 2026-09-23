@@ -98,4 +98,6 @@ server gets a store that outlives its containers.
 - Leave the service **up** at the end of this phase: Phase 5 redeploys it with Firestore. Idle
   at `min-instances=0` it costs nothing.
 
-Step-by-step with commands is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+The `gcloud` commands are deliberately not given — you performed these operations in the Google
+Cloud modules named under each task.

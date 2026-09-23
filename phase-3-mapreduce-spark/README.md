@@ -89,4 +89,6 @@ your cloud job, and why map tasks must be idempotent for retries to be safe.
   they must stay public so grading can read them.
 - BigQuery storage + queries are far under the free 10 GiB / 1 TiB-query limits.
 
-Step-by-step with commands is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+The `gcloud` commands are deliberately not given — you performed these operations in the Google
+Cloud modules named under each task. Teardown commands *are* given in full.

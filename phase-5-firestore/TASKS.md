@@ -153,11 +153,16 @@ python -m pytest phase-5-firestore/tests -p autograder.points -q   # full public
 
 ---
 
-## Task 8 — Tear down (after you're graded)
+## Task 8 — Tear down, once your CI is green
+
+Wait until `autograde-phase-5` has gone green and everything is pushed — that run live-curls
+your service and is your evidence. A later push after teardown re-runs the workflow and turns
+it red, so finish your pushes first.
 
 **Commands given in full — never guess at teardown.** Phase 6 creates its own service (`chat-tf`)
 from the `chat:v2` image with Terraform; it needs the Firestore database and the image, not this
-service or its custom role. Keep the Firestore database.
+service or its custom role. Keep the Firestore database, the `chat:v2` image, and the Phase-2/3
+objects in your bucket.
 
 ```bash
 gcloud run services delete chat --region=$REGION --quiet

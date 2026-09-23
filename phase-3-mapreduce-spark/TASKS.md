@@ -281,14 +281,18 @@ python -m pytest phase-3-mapreduce-spark/tests -p autograder.points -q   # full 
 
 ---
 
-## Task 14 — Tear down (after your grade is in)
+## Task 14 — Tear down, once your CI is green
 
 Nothing here costs money while idle — the function scales to zero, an idle workflow is free,
-and the bucket is a few MB. Still, once graded: delete the **workflow**, the **function** (which
-also removes its Cloud Run service and its container image from Artifact Registry), and the
-`mr-*` job folders in the bucket. Keep `wordcount.json` and `tfidf.parquet` **public until you
-are graded** — the autograder fetches them on every CI run. Then check the billing report
-shows €0.00 for the month, as in Phase 1.
+and the bucket is a few MB. Still, once `autograde-phase-3` has gone green and you have pushed
+everything: delete the **workflow**, the **function** (which also removes its Cloud Run service
+and its container image from Artifact Registry), and the `mr-*` job folders in the bucket. Then
+check the billing report shows €0.00 for the month, as in Phase 1.
+
+**Two objects stay.** Keep `wordcount.json` and `tfidf.parquet` public until **Phase 6 is
+graded**, not just this phase: every CI run here re-fetches them, Phase 4 queries the table
+built from the Parquet, and Phase 6's Terraform rebuilds that table from the Parquet on every
+apply.
 
 **Taught in.** Fundamentals M6 · Phase 1 Task 11
 

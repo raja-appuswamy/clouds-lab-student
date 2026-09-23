@@ -32,7 +32,9 @@ like now, and it is only teachable to someone who already has Phases 1–5 in th
    `agent-operator` with only the roles the stack needs — deliberately not project-IAM admin —
    that your shell impersonates without a key file; and `policy.json`, your written decision of
    what the agent may run unasked, what needs your approval, and what is forbidden (destroy,
-   delete). The autograder reads the policy.
+   delete). The autograder reads the policy. [agent/PROMPT.md](agent/PROMPT.md) is the kickoff
+   prompt: it makes the agent explain each resource — spec line, the attribute that would
+   silently break it, the cost — and stop for you, rather than emitting a wall of HCL.
 1. **The stack, as code — written by the agent** ([SPEC.md](SPEC.md) → [terraform/](terraform/)).
    Twenty-odd resources: the APIs, a least-privilege service account with the custom role from
    Phase 4, the Cloud Run service with its scaling and environment, a BigQuery dataset whose
@@ -133,4 +135,6 @@ terraform destroy ──► by you, never the agent
   of the phase is that infrastructure is disposable. Your data — bucket, Firestore, images —
   is untouched by design.
 
-Step-by-step is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+In this phase the commands *are* given wherever the step is yours rather than the agent's —
+agent tooling is not part of the Google Cloud track.

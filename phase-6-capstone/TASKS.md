@@ -124,16 +124,41 @@ read the plan: around 19 resources to add, nothing to change or destroy, every o
 recognisable from Phases 4–5 — including the BigQuery *load job* that rebuilds the TF-IDF
 table from your Phase-3 Parquet.
 
-Start the agent in the repo root, point it at the brief, and give it the task in one sentence
-("Complete phase-6-capstone/terraform to satisfy SPEC.md and get `terraform plan` clean").
-Then **watch**. Every command it proposes, every error it reads, every fix it tries — this is
-the loop you will describe in the supervision log. The offline tests are its (and your) check —
-they need no cloud resources, and **they fail until the agent has written the Terraform**, which
-is exactly what makes them a to-do list it can work against:
+Start the agent in the repo root and give it the kickoff prompt in
+[agent/PROMPT.md](agent/PROMPT.md) — paste it verbatim, or adapt it and say in the supervision
+log what you changed. It asks the agent for more than code: for each resource it must name the
+line of `SPEC.md` that requires it, the one attribute that would silently break it and what the
+symptom would be, what it costs, and which test the change should turn green — then stop and
+wait for you. An agent told only "write the Terraform" produces code you cannot review, and
+reviewing it is what this phase grades.
+
+Then **watch**. Every command it proposes, every explanation it gives, every error it reads,
+every fix it tries — this is the loop you will describe in the supervision log. Read the
+explanations as you would a colleague's: a confident wrong one is the most useful thing that
+can happen here, and it fills the log's "one thing the agent got wrong" slot.
+
+Run the offline tests **throughout**, not at the end. They parse the files on disk, need no
+cloud resources and change nothing, so they are safe to run at any moment — and they fail from
+the start, because five of the seven checks describe Terraform that does not exist yet. Their
+assertion messages are the to-do list:
 
 ```bash
 python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q
 ```
+
+The loop looks like this:
+
+1. The agent edits a `.tf` file.
+2. It runs `terraform validate` and the command above — both auto-allowed in your policy —
+   and reads what still fails. (Rule 5 of [agent/GEMINI.md](agent/GEMINI.md) requires it to;
+   rule 4 caps it at two attempts on the same error before it has to come back to you.)
+3. It fixes and re-runs. You watch the diffs, not just the summaries.
+4. **You run the tests yourself** before approving anything — the agent reporting green is not
+   evidence, your own run is.
+
+You are done with this task when everything except `test_deployment_manifest` passes (that one
+is the Kubernetes manifest, Task 8) and `terraform plan` shows resources to add, none to change
+and none to destroy.
 
 **Taught in.** Terraform badge · Elastic M3 — you can read a plan; now you read one you did not
 write.
@@ -145,21 +170,60 @@ provider attribute, `terraform validate` will say so — let it read the error b
 
 ## Task 4 — Apply, under supervision
 
-**Objective.** The stack applied, by the agent, with your approval at each state-changing
-step — and one moment where you had to decide.
+**Objective.** The stack applied by the agent, with your approval at each state-changing step
+— and one privileged operation that the agent cannot perform, which you have to decide what to
+do about. That decision, not the apply, is what this task is for.
 
-`apply` needs your approval (Task 2). Approve it. Somewhere in the apply the agent will hit a
-wall: binding project roles to the chat service account needs
-`roles/resourcemanager.projectIamAdmin`, which `agent-operator` does not have. The apply fails
-with a `403`, the agent reads it and proposes something. **This is the decision the phase is
-built around.** Your options, roughly: grant the role to the agent (and now it can change
-anyone's permissions in the project); grant it, apply, and revoke it; or create those bindings
-yourself, by hand, once, and let the agent carry on. There is no single right answer — there is
-a defensible one, and the supervision log asks for yours.
+**Step 1 — tell the agent to apply.** Your policy puts `terraform apply` in `confirm`, so it
+stops and asks. Approve it deliberately: before you say yes, know how many resources the plan
+adds and which of them cost money. Write the approval row in `phase6_supervision.md` **now**,
+while you remember what you were thinking — not at the end of the phase.
 
-When apply completes, record it:
+**Step 2 — the apply stops partway, with a 403.** Most of the stack comes up, then Terraform
+fails on the project IAM bindings for the chat service account:
+
+```
+Error: Error applying IAM policy for project "...": googleapi: Error 403: Policy update access denied.
+```
+
+This is designed, not broken. Task 1 gave `agent-operator` every role the stack needs *except*
+`roles/resourcemanager.projectIamAdmin`, and `google_project_iam_member.chat_roles` /
+`chat_custom_role` cannot be created without it. Terraform applies resource by resource, so
+everything created before the failure still exists — re-running apply continues from there.
+
+**Step 3 — grant the role, and decide how long it keeps it.** The agent will propose
+something, usually "grant me the role". Grant it — but note that you cannot grant a role
+*while impersonating* the account that lacks it, so be yourself for that command:
 
 ```bash
+gcloud config unset auth/impersonate_service_account
+gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:$AGENT_SA" \
+    --role=roles/resourcemanager.projectIamAdmin --quiet
+gcloud config set auth/impersonate_service_account $AGENT_SA
+```
+
+The agent re-runs apply and the stack completes. **Now the graded decision: does it keep the
+role?** With `projectIamAdmin`, `agent-operator` can change anyone's permissions in the
+project — including granting itself more. The disciplined answer is to take it back the moment
+the apply is done, and to know how long it held it:
+
+```bash
+gcloud config unset auth/impersonate_service_account
+gcloud projects remove-iam-policy-binding $PROJECT --member="serviceAccount:$AGENT_SA" \
+    --role=roles/resourcemanager.projectIamAdmin --quiet
+gcloud config set auth/impersonate_service_account $AGENT_SA
+```
+
+Leaving it granted is a choice too — cheaper, and it means the next apply just works. If you
+leave it, say so and defend it. The supervision log's `iam_403` slot asks what you saw, what
+you decided, how long the agent held the role, and what you gave up by deciding that way.
+
+**Step 4 — finish the apply and record it.** Re-run apply until it completes with no errors,
+check the service answers, then write the report:
+
+```bash
+terraform output -raw chat_url                      # the new service (chat-tf, not Phase 5's chat)
+curl -s $(terraform output -raw chat_url)/health    # expect "store": "firestore"
 python phase-6-capstone/make_report.py terraform
 ```
 

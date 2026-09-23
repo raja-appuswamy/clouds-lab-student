@@ -94,7 +94,10 @@ means — the ACID demo in this phase reproduces it on real Firestore.
 ## Free-tier & safety
 
 - Firestore Always-Free is 50k reads / 20k writes per day — this phase uses a few dozen.
-- The redeployed Cloud Run service stays at `min-instances=0` (≈ €0 idle). Tear it down after
-  grading (TASKS.md); keep the Firestore database — Phase 6 deploys against it.
+- The redeployed Cloud Run service stays at `min-instances=0` (≈ €0 idle). Tear it down once
+  your `autograde-phase-5` run is green (TASKS.md Task 8); keep the Firestore database and the
+  `chat:v2` image — Phase 6 builds on both.
 
-Step-by-step is in **[TASKS.md](TASKS.md)**.
+The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
+The `gcloud` commands are deliberately not given — you performed these operations in the Google
+Cloud modules named under each task. Teardown commands *are* given in full.

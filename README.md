@@ -54,13 +54,14 @@ Two things follow from the table that are easy to miss when you are inside one p
 
 - **Your bucket and your BigQuery dataset accumulate.** `model.safetensors` (Phase 2),
   `tfidf.parquet` and `wordcount.json` (Phase 3), `index.html` (Phase 4) all live in
-  `<project>-eurecomgpt`; the `eurecomgpt` dataset holds `tfidf` (Phase 3). Do not delete
-  these between phases — Phase 4 will not start without the first
-  two, and the autograder reads the public ones on every CI run.
+  `<project>-eurecomgpt`; the `eurecomgpt` dataset holds `tfidf` (Phase 3). Keep them until
+  **Phase 6 is graded** — Phase 4 will not start without the first two, Phase 6's Terraform
+  rebuilds the BigQuery table from the Parquet on every apply, and the autograder reads the
+  public ones on every CI run.
 - **Compute is torn down, data is kept.** VMs, Cloud Run services, functions and workflows are
-  deleted at the end of the phase that created them (the task sheets say when) — with one
-  deliberate exception: the `chat` service stays up from Phase 4 into Phase 5, which redeploys
-  it. The artifacts above are what carry forward.
+  deleted once that phase's `autograde-phase-N` run is green and everything is pushed (the task
+  sheets say exactly what) — with one deliberate exception: the `chat` service stays up from
+  Phase 4 into Phase 5, which redeploys it. The artifacts above are what carry forward.
 
 ---
 
