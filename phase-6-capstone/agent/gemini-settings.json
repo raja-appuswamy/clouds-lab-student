@@ -4,8 +4,6 @@
   "excludeTools": [
     "run_shell_command(terraform destroy)",
     "run_shell_command(terraform apply -destroy)",
-    "run_shell_command(kubectl delete)",
-    "run_shell_command(kind delete)",
     "run_shell_command(gcloud run services delete)",
     "run_shell_command(gcloud storage rm)",
     "run_shell_command(rm -rf)"

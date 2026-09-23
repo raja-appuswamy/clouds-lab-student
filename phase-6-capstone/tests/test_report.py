@@ -1,4 +1,4 @@
-"""Phase 6 report tests — apply, load test, Kubernetes, destroy, and the two logs (public). (50 points.)"""
+"""Phase 6 report tests — apply, load test, destroy, and the two writeups (public). (50 points.)"""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ REQUIRED_TYPES = {
 }
 
 
-@points(8)
+@points(12)
 def test_terraform_apply_recorded(report):
     tf = report.get("terraform", {})
     assert tf.get("resource_count", 0) >= 12, f"expected a full stack (>= 12 managed resources), got {tf.get('resource_count')}"
@@ -24,7 +24,7 @@ def test_terraform_apply_recorded(report):
         "right after apply, /health should answer 200 with store=firestore")
 
 
-@points(12)
+@points(18)
 def test_load_test_shows_elasticity(report):
     lt = report.get("loadtest", {})
     assert lt.get("requests", 0) >= 500, f"load test too small ({lt.get('requests')} requests) — run >= 500"
@@ -36,23 +36,10 @@ def test_load_test_shows_elasticity(report):
         "Check max_instance_request_concurrency in main.tf and that loadtest.py waited for Monitoring.")
 
 
-@points(12)
-def test_kubernetes_rollout(report):
-    k = report.get("k8s", {})
-    assert k.get("replicas", 0) >= 2 and k.get("ready_replicas", 0) == k.get("replicas"), (
-        f"deployment not fully ready: {k.get('ready_replicas')}/{k.get('replicas')}")
-    assert k.get("revision", 0) >= 2, "deployment revision < 2 — do the rolling update (Task 9)"
-    assert k.get("service_type") == "NodePort" and k.get("node_port") == 30080, "Service should be NodePort 30080"
-    assert k.get("distinct_instances", 0) >= 2, (
-        f"{k.get('probes')} requests through the Service reached only {k.get('distinct_instances')} pod — "
-        "were both replicas ready when make_report.py k8s ran?")
-    assert "PLACEHOLDER" not in k.get("image", "PLACEHOLDER"), "deployment.yaml still has the image placeholder"
-
-
-@points(8)
+@points(10)
 def test_stack_destroyed(report):
     d = report.get("destroyed")
-    assert d, "no destroy recorded — run `terraform destroy`, then make_report.py destroyed (Task 11)"
+    assert d, "no destroy recorded — run `terraform destroy`, then make_report.py destroyed (Task 8)"
     assert d.get("resources_remaining") == 0, f"{d.get('resources_remaining')} resources still in state after destroy"
     assert d.get("chat_url_status") in (0, 404), f"the destroyed service still answers HTTP {d.get('chat_url_status')}"
 
@@ -60,7 +47,7 @@ def test_stack_destroyed(report):
 @points(5)
 def test_supervision_log_complete(supervision):
     """submission/phase6_supervision.md: every slot filled, >= 4 approvals including a refusal."""
-    assert supervision, "submission/phase6_supervision.md not found — copy supervision_template.md there (Task 11)"
+    assert supervision, "submission/phase6_supervision.md not found — copy supervision_template.md there (Task 8)"
     for slot in ("agent_tool", "agent_identity", "boundary_rationale", "approvals", "refusal",
                  "iam_403", "agent_mistake", "by_hand", "trust_boundary"):
         assert filled(supervision, slot), f"supervision log slot {slot!r} is still TODO"
@@ -76,7 +63,7 @@ def test_supervision_log_complete(supervision):
 @points(5)
 def test_review_complete(review):
     """submission/phase6_review.md: three faults, each with where / what / fix, and a verdict."""
-    assert review, "submission/phase6_review.md not found — copy review_template.md there (Task 10)"
+    assert review, "submission/phase6_review.md not found — copy review_template.md there (Task 7)"
     for letter in "abc":
         for part in ("where", "what", "fix"):
             assert filled(review, f"fault_{letter}_{part}"), f"review slot fault_{letter}_{part} is still TODO"

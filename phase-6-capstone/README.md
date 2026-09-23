@@ -4,12 +4,12 @@
 
 **Goal:** operate what you built — with an **AI agent as your operator** and you as the
 engineer accountable for it. The agent writes the Terraform from a spec, runs the plan/apply
-loop, drives `kubectl`, reads errors and retries. You give it a bounded identity, decide what
+loop, reads errors and retries. You give it a bounded identity, decide what
 it may do without asking, watch it work, catch what it gets wrong, review another agent's
 pull request for planted faults, and destroy everything yourself. The stack it builds
 is graded exactly as a hand-built one would be; how you supervised is graded as well.
 
-**Environment: Google Cloud Shell** (Boost mode for the Kubernetes part), with an agent that
+**Environment: Google Cloud Shell**, with an agent that
 executes commands under approval — Gemini CLI has a free tier and runs there; any equivalent is
 fine, and the phase can be done without one. **Prerequisites:** Phases 2–5 artifacts still in
 place — `model.safetensors` and `tfidf.parquet` in your bucket, the Firestore database, the
@@ -46,21 +46,16 @@ like now, and it is only teachable to someone who already has Phases 1–5 in th
 2. **Elasticity, measured** ([loadtest.py](loadtest.py)). Twenty concurrent clients for two
    minutes, then a query to the Cloud Monitoring API for the peak instance count. With
    `max_instance_request_concurrency = 5`, Cloud Run must scale out — and you have the number.
-3. **The same container on Kubernetes** ([k8s/](k8s/)), in a `kind` cluster inside Cloud Shell:
-   a Deployment with two replicas, a readiness probe and resource limits; a NodePort Service;
-   a rolling update. Twenty requests through the Service reach two different pods — and `/chat`
-   fails, because a pod has no Google identity. Both are the lesson.
-4. **A review of another agent's pull request** ([review/main.tf](review/main.tf)): a
+3. **A review of another agent's pull request** ([review/main.tf](review/main.tf)): a
    complete, valid Terraform for the same stack with **three planted faults** — one costs money,
    one over-grants, one fails silently. You find them before they reach a project.
-5. **A supervision log** ([supervision_template.md](supervision_template.md)): every approval
+4. **A supervision log** ([supervision_template.md](supervision_template.md)): every approval
    the agent asked for and what you decided, the 403 moment, what it got wrong, what you did by
    hand, and where you would now draw the line.
-6. **A post-mortem** ([postmortem_template.md](postmortem_template.md)): what Terraform managed
-   and what it deliberately did not, what broke, why the service scaled the way it did, a
-   *costed* GKE Autopilot vs Cloud Run comparison at 1× and 1,000× load, and what breaks first
-   at 1,000×.
-7. **Teardown by hand, proven** — `terraform destroy` is yours, not the agent's, and the
+5. **A post-mortem** ([postmortem_template.md](postmortem_template.md)): what Terraform managed
+   and what it deliberately did not, what broke, why the service scaled the way it did, and what
+   breaks first at 1,000× the load.
+6. **Teardown by hand, proven** — `terraform destroy` is yours, not the agent's, and the
    report records that nothing is left.
 
 ```
@@ -75,8 +70,6 @@ terraform apply ──► APIs · SA + roles · Cloud Run "chat-tf" · BigQuery 
       │        loadtest.py ─── 20 clients ───────┘ ───► Monitoring: instance_count peaks at 3
       │
       └── NOT managed: bucket + artifacts, Firestore DB, the image      (data outlives infrastructure)
-
-kind create cluster ──► Deployment (2 pods) ──► Service :30080 ──► two instance ids; /chat has no identity
 
 review/main.tf (PR #12, by another agent) ──► you find: min_instances=1 · dataViewer · silent sink
 terraform destroy ──► by you, never the agent
@@ -97,26 +90,21 @@ terraform destroy ──► by you, never the agent
   <https://cloud.google.com/run/docs/about-instance-autoscaling>
 - **Cloud Monitoring** — alerting policies, log-based metrics, sinks to BigQuery:
   <https://cloud.google.com/monitoring/alerts>, <https://cloud.google.com/logging/docs/export/configure_export_v2>
-- **kind** — Kubernetes in Docker: <https://kind.sigs.k8s.io/docs/user/quick-start/>
-- **Kubernetes Deployments** — replicas, probes, rolling updates:
-  <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/>
-- **Pricing** for the comparison: <https://cloud.google.com/run/pricing>,
-  <https://cloud.google.com/kubernetes-engine/pricing>
+- **Cloud Run pricing** — what the service would cost under real load:
+  <https://cloud.google.com/run/pricing>
 
 ---
 
 ## How it's graded
 
-- **Offline static checks** parse your `terraform/*.tf` and `k8s/deployment.yaml` — whoever
-  wrote them, they must declare what `SPEC.md` requires (env, scaling, custom role, alert
-  filter, sink filter, replicas, probe, resources) — and `agent/policy.json` (destroy and delete
-  forbidden, apply needs approval, plan automatic).
+- **Offline static checks** parse your `terraform/*.tf` — whoever wrote them, they must
+  declare what `SPEC.md` requires (env, scaling, custom role, alert filter, sink filter) — and
+  `agent/policy.json` (destroy and delete forbidden, apply needs approval, plan automatic).
 - **Live checks** curl the Terraform-managed service while it exists (they skip once your report
   records the destroy — so push once *before* destroying).
-- **Report checks** read `submission/phase6_report.json`, built in four stages by
+- **Report checks** read `submission/phase6_report.json`, built in three stages by
   `make_report.py`: the apply (resource types, health), the load test (≥ 500 requests, sane
-  percentiles, **peak instances ≥ 2**), the Kubernetes rollout (2/2 ready, revision ≥ 2, ≥ 2
-  distinct pods answering), and the destroy (0 resources left, URL dead).
+  percentiles, **peak instances ≥ 2**), and the destroy (0 resources left, URL dead).
 - **Writeup structure checks**: the supervision log has every slot filled and ≥ 4 approval
   rows including a refusal; the review names three faults with a fix each. A hidden test checks
   the three faults are the *right* three.
@@ -129,8 +117,6 @@ terraform destroy ──► by you, never the agent
   is two minutes of cheap requests — thousands of the two million free invocations, a few
   hundred of the 360,000 free GiB-seconds. Alerting policies, log-based metrics and the
   Monitoring API cost nothing; the sink's log volume is megabytes against 50 GiB free.
-- `kind` runs inside Cloud Shell, which is Always Free; the cluster is ephemeral and dies with
-  the session anyway — `kind delete cluster` just makes it explicit.
 - **`terraform destroy` is a graded step.** Nothing here costs money while idle, but the point
   of the phase is that infrastructure is disposable. Your data — bucket, Firestore, images —
   is untouched by design.

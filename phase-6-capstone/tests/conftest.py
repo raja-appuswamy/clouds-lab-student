@@ -12,7 +12,6 @@ import pytest
 PHASE_DIR = Path(__file__).resolve().parents[1]        # phase-6-capstone/
 REPO_ROOT = PHASE_DIR.parent
 TF_DIR = PHASE_DIR / "terraform"
-K8S_DIR = PHASE_DIR / "k8s"
 REPORT_PATH = REPO_ROOT / "submission" / "phase6_report.json"
 
 for p in (str(REPO_ROOT), str(PHASE_DIR)):
@@ -45,13 +44,6 @@ def tf() -> dict:
                 for name, body in named.items():
                     resources[(rtype, name)] = body
     return resources
-
-
-@pytest.fixture(scope="session")
-def deployment() -> dict:
-    import yaml
-
-    return yaml.safe_load((K8S_DIR / "deployment.yaml").read_text(encoding="utf-8"))
 
 
 @pytest.fixture(scope="session")
@@ -91,7 +83,7 @@ def report() -> dict:
     if not REPORT_PATH.exists():
         pytest.fail(
             "submission/phase6_report.json not found — run the make_report.py stages "
-            "(terraform, loadtest, k8s, destroyed) as TASKS.md describes."
+            "(terraform, loadtest, destroyed) as TASKS.md describes."
         )
     try:
         return json.loads(REPORT_PATH.read_text(encoding="utf-8"))

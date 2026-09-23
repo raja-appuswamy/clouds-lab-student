@@ -4,13 +4,11 @@ Each subcommand adds one section; run them in this order (TASKS.md says when):
 
     python phase-6-capstone/make_report.py terraform    # after `terraform apply`
     python phase-6-capstone/make_report.py loadtest     # after loadtest.py
-    python phase-6-capstone/make_report.py k8s          # after the kind rollout
     python phase-6-capstone/make_report.py destroyed    # after `terraform destroy`
 
 `terraform` reads the state (`terraform show -json`) and the outputs — what was created, by
-type — and live-checks the service. `k8s` reads the Deployment from kubectl and hits the
-Service through localhost:30080 to count the distinct pods that answer. `destroyed` re-reads
-the state and records that it is empty: the stack is gone, the data is not.
+type — and live-checks the service. `destroyed` re-reads the state and records that it is
+empty: the stack is gone, the data is not.
 """
 
 from __future__ import annotations
@@ -110,38 +108,6 @@ def stage_loadtest(report: dict) -> dict:
     return report
 
 
-def stage_k8s(report: dict, port: int = 30080, probes: int = 20) -> dict:
-    dep = json.loads(_run(["kubectl", "get", "deployment", "chat", "-o", "json"]))
-    svc = json.loads(_run(["kubectl", "get", "service", "chat", "-o", "json"]))
-    pods = json.loads(_run(["kubectl", "get", "pods", "-l", "app=chat", "-o", "json"]))
-    revision = int(dep["metadata"].get("annotations", {}).get("deployment.kubernetes.io/revision", "0"))
-    image = dep["spec"]["template"]["spec"]["containers"][0]["image"]
-
-    # Through the Service: which pods answer? kube-proxy spreads requests across ready pods.
-    seen: collections.Counter = collections.Counter()
-    for _ in range(probes):
-        status, body = _get_json(f"http://localhost:{port}/health")
-        if status == 200:
-            seen[body.get("instance")] += 1
-    print(f"deployment chat: {dep['status'].get('readyReplicas', 0)}/{dep['spec']['replicas']} ready, "
-          f"revision {revision}, image {image}")
-    print(f"{probes} requests via the Service reached {len(seen)} distinct pod(s): {dict(seen)}")
-
-    report["k8s"] = {
-        "replicas": dep["spec"]["replicas"],
-        "ready_replicas": dep["status"].get("readyReplicas", 0),
-        "revision": revision,
-        "image": image,
-        "service_type": svc["spec"].get("type"),
-        "node_port": next((p.get("nodePort") for p in svc["spec"].get("ports", [])), None),
-        "pods": [p["metadata"]["name"] for p in pods.get("items", [])],
-        "probes": probes,
-        "distinct_instances": len(seen),
-        "instances_seen": dict(seen),
-    }
-    return report
-
-
 def stage_destroyed(report: dict) -> dict:
     resources, _ = _tf_state()
     chat_url = report.get("chat_url", "")
@@ -154,11 +120,11 @@ def stage_destroyed(report: dict) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("stage", choices=["terraform", "loadtest", "k8s", "destroyed"])
+    ap.add_argument("stage", choices=["terraform", "loadtest", "destroyed"])
     a = ap.parse_args(argv)
     report = _load()
     report = {"terraform": stage_terraform, "loadtest": stage_loadtest,
-              "k8s": stage_k8s, "destroyed": stage_destroyed}[a.stage](report)
+              "destroyed": stage_destroyed}[a.stage](report)
     _save(report)
     return 0
 

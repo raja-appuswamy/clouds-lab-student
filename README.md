@@ -48,7 +48,7 @@ deployment skills everything else assumes.
 | **3 — Index the corpus** | A word count run as a real **MapReduce job** — Cloud Run function workers, Cloud Storage shuffle, Cloud Workflows job tracker — then a **TF-IDF index** built with Spark | **BigQuery table `eurecomgpt.tfidf`** (+ the Parquet in your bucket) | Phase 4 queries it on every user message (`BQ_TABLE`) |
 | **4 — The chat app** | A FastAPI server on Cloud Run that retrieves (Phase 3) → generates (Phase 2) → keeps the conversation *in the container's memory*, plus the browser UI on Cloud Storage. Ends with an experiment: force a fresh container and watch the history vanish | **A public chat URL** — the working product, minus a memory | Phase 5 redeploys it with a real store; Phase 6 rebuilds it as code |
 | **5 — Remember conversations** | The Firestore schema `sessions/{id}/messages` and a **transactional** `send_message` that cannot lose updates; the same chat server redeployed with Firestore as its store — and the Phase-4 experiment repeated, with the opposite result | The **`firestore_store`** module and the schema, and a chat app that remembers | Phase 6's Terraform deploys the same server against the same database |
-| **6 — Capstone** | **Supervise an AI agent** operating your stack: you give it a bounded identity and an approval boundary; it writes the Terraform from a spec — service, identity, data plane, alert, log sink — and runs the plan/apply loop under your approval; a **load test** with the instance count read from Cloud Monitoring; the same container on **Kubernetes** (`kind` in Cloud Shell); a **review** of another agent's Terraform with three planted faults; `terraform destroy` — by you | The supervision log, the review, the post-mortem | — |
+| **6 — Capstone** | **Supervise an AI agent** operating your stack: you give it a bounded identity and an approval boundary; it writes the Terraform from a spec — service, identity, data plane, alert, log sink — and runs the plan/apply loop under your approval; a **load test** with the instance count read from Cloud Monitoring; a **review** of another agent's Terraform with three planted faults; `terraform destroy` — by you | The supervision log, the review, the post-mortem | — |
 
 Two things follow from the table that are easy to miss when you are inside one phase:
 
@@ -86,7 +86,7 @@ bottom up:
    here is what fills that hole, and it is the reason the chat history becomes trustworthy.
 6. **Operating it — through an agent** (Phase 6). Everything you clicked or typed in Phases
    4–5 becomes code an AI agent writes and applies under your supervision; the elasticity
-   Lecture 1 promised becomes a number from Cloud Monitoring; Kubernetes shows you what Cloud
+   Lecture 1 promised becomes a number from Cloud Monitoring; the review shows you what Cloud
    Run had been deciding on your behalf; and the phase's real subject is the boundary you set
    for the agent and the judgement you apply to what it produces.
 
@@ -95,7 +95,7 @@ bottom up:
 ## Two environments, one repo
 
 - **Google Cloud Shell** is where you deploy and run cloud things: Phases 0, 1, 3 (MapReduce
-  half), 4, 5, 6 (including a Kubernetes cluster that runs *inside* Cloud Shell). It has `gcloud`, Docker, git and Python preinstalled and is free.
+  half), 4, 5 and 6. It has `gcloud`, Docker, git and Python preinstalled and is free.
 - **Google Colab** is where heavy compute happens: Phase 2 (GPU training) and the Spark half of
   Phase 3. There is no free GPU on GCP; Colab's is.
 

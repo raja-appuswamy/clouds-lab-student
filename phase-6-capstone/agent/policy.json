@@ -6,10 +6,6 @@
     "terraform plan",
     "terraform show",
     "terraform output",
-    "kubectl get",
-    "kubectl describe",
-    "kubectl logs",
-    "kubectl rollout status",
     "gcloud * list",
     "gcloud * describe",
     "curl",
@@ -17,20 +13,13 @@
   ],
   "confirm": [
     "terraform apply",
-    "kubectl apply",
-    "kubectl set",
-    "kubectl rollout restart",
     "gcloud * create",
     "gcloud * update",
-    "gcloud * add-iam-policy-binding",
-    "kind create cluster",
-    "kind load"
+    "gcloud * add-iam-policy-binding"
   ],
   "forbidden": [
     "terraform destroy",
     "terraform apply -destroy",
-    "kubectl delete",
-    "kind delete",
     "gcloud * delete",
     "gcloud * remove-iam-policy-binding",
     "rm -rf",

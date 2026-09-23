@@ -27,7 +27,6 @@ Numbers only.
 | Load test: p50 latency, ms (`loadtest.latency_ms.p50`) | <!--answer:load_p50_ms-->TODO<!--/answer--> |
 | Load test: p99 latency, ms (`loadtest.latency_ms.p99`) | <!--answer:load_p99_ms-->TODO<!--/answer--> |
 | Peak Cloud Run instances during the test (`loadtest.max_instances`) | <!--answer:load_max_instances-->TODO<!--/answer--> |
-| Kubernetes: distinct pods that answered through the Service (`k8s.distinct_instances`) | <!--answer:k8s_distinct_instances-->TODO<!--/answer--> |
 | Resources left in state after destroy (`destroyed.resources_remaining`) | <!--answer:tf_remaining-->TODO<!--/answer--> |
 
 ---
@@ -79,36 +78,7 @@ TODO
 
 ---
 
-## 4. Kubernetes versus Cloud Run
-
-**What you did by hand.** Name three things Kubernetes made *you* declare in `deployment.yaml`
-and `service.yaml` that Cloud Run decided for you in Phases 4-5. (~50 words)
-
-<!--answer:k8s_vs_cloudrun_responsibilities-->
-TODO
-<!--/answer-->
-
-**Why `/chat` failed in kind.** `/health` and `/sessions` worked in your kind cluster; `/chat`
-did not. Explain exactly why, in terms of identity, and name the GKE feature that would fix it
-in production. (~50 words)
-
-<!--answer:kind_chat_failure-->
-TODO
-<!--/answer-->
-
-**The cost comparison.** Estimate the monthly cost of running this chat service on **GKE
-Autopilot** versus on **Cloud Run** at two load levels: your load test's traffic, and 1,000× that.
-Show your assumptions (vCPU/memory per replica, requests per second, seconds of CPU per
-request, always-on vs scale-to-zero) and a number for each of the four cells. Then say which you
-would choose at each level and why. (~120 words, with numbers)
-
-<!--answer:cost_comparison-->
-TODO
-<!--/answer-->
-
----
-
-## 5. At 1,000× scale
+## 4. At 1,000× scale
 
 **What breaks first.** If a thousand times more users arrived tomorrow, which component of the
 stack you built — the Cloud Run service, Firestore, the BigQuery retrieval query, the model

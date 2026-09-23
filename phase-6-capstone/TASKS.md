@@ -2,12 +2,12 @@
 
 Do everything in **Google Cloud Shell**. Read [README.md](README.md) and [SPEC.md](SPEC.md)
 first. Two halves: Tasks 1–6 (identity, boundary, the agent builds and applies, load test,
-logs), then Tasks 7–14 (Kubernetes, the review, the logs, teardown, submission).
+logs), then Tasks 7–11 (the review, the writeups, teardown, submission).
 
 > **How this task sheet differs from the others.** Phases 0–5 withheld the `gcloud` commands
 > because you were learning the primitives. In Phase 6 you are learning something else: to
 > **supervise an AI agent that operates your stack** — one that writes the Terraform, runs the
-> plan/apply loop, drives `kubectl`, reads errors and retries. So the commands are *its* job,
+> plan/apply loop, reads errors and retries. So the commands are *its* job,
 > and yours is to decide what it may do, watch what it does, catch what it gets wrong, and
 > sign off. The stack it builds is graded exactly as before; how you supervised is graded too.
 >
@@ -156,9 +156,8 @@ The loop looks like this:
 4. **You run the tests yourself** before approving anything — the agent reporting green is not
    evidence, your own run is.
 
-You are done with this task when everything except `test_deployment_manifest` passes (that one
-is the Kubernetes manifest, Task 8) and `terraform plan` shows resources to add, none to change
-and none to destroy.
+You are done with this task when every check in `test_units.py` passes and `terraform plan`
+shows resources to add, none to change and none to destroy.
 
 **Taught in.** Terraform badge · Elastic M3 — you can read a plan; now you read one you did not
 write.
@@ -272,66 +271,7 @@ read the answer.
 
 ---
 
-## Task 7 — A Kubernetes cluster in Cloud Shell *(install command given)*
-
-Turn on Cloud Shell **Boost mode** first (⋮ → *Boost Cloud Shell*): 4 GB, enough for a control
-plane and two pods.
-
-```bash
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64 && chmod +x ./kind && sudo mv ./kind /usr/local/bin/kind
-```
-
-**Objective.** A one-node cluster named `eurecomgpt` created from
-[k8s/kind-config.yaml](k8s/kind-config.yaml) (`kind create cluster` needs approval — it is in
-`confirm`); `kubectl get nodes` shows it `Ready`. Read the config: the port mapping is what will
-let you reach the Service from Cloud Shell.
-
-**Taught in.** GKE M2 *Containers and Kubernetes* · GKE M3 *Kubernetes Architecture*
-
----
-
-## Task 8 — Get your image into the cluster
-
-**Objective.** Your Phase-5 image (`$IMAGE`) in the kind node's image store. The node cannot
-pull from Artifact Registry, so: authenticate Docker to the registry, pull the image into Cloud
-Shell's daemon, then `kind load docker-image $IMAGE --name eurecomgpt`. The agent can do all
-three. Note that Task 1's impersonation applies to the registry login too, and
-`agent-operator` was given no Artifact Registry role — if the pull is refused, that is a
-Task-1 decision surfacing, and it belongs in the log.
-
-**Taught in.** Fundamentals M5 · Phase 1 Task 3
-
-**Verified by.** `docker exec eurecomgpt-control-plane crictl images` lists the image.
-
-
----
-
-## Task 9 — Deploy, expose, roll out
-
-**Objective.** [k8s/deployment.yaml](k8s/deployment.yaml) completed (`replicas`,
-`readinessProbe`, `resources`, the two placeholders) — by the agent from the file's comments
-and `SPEC.md`'s constraints — and applied with [k8s/service.yaml](k8s/service.yaml). Both pods
-`Ready`; `curl localhost:30080/health` a few times shows **two different `instance` ids**. Then
-a **rolling update** (change any environment variable on the Deployment) and the Deployment's
-revision becomes 2. `kubectl apply` and `set env` need approval; `get`, `describe`, `rollout
-status` do not.
-
-Try `curl -X POST localhost:30080/chat …` too. It fails — and the post-mortem asks why.
-
-**Taught in.** GKE M4 *Kubernetes Operations*
-
-**Verified by.**
-
-```bash
-python phase-6-capstone/make_report.py k8s
-```
-
-reads the Deployment, the Service, and probes the Service twenty times counting distinct pods:
-2/2 ready, revision ≥ 2, ≥ 2 distinct.
-
----
-
-## Task 10 — Review another agent's pull request
+## Task 7 — Review another agent's pull request
 
 Now the other side of the job. [review/main.tf](review/main.tf) is a complete Terraform for the
 same stack, written by an agent from the same `SPEC.md`. It validates, it would apply, and it
@@ -355,7 +295,7 @@ you found the right three.
 
 ---
 
-## Task 11 — The supervision log
+## Task 8 — The supervision log
 
 ```bash
 cp phase-6-capstone/supervision_template.md submission/phase6_supervision.md
@@ -372,30 +312,28 @@ rows with a refusal; the instructor reads it.
 
 ---
 
-## Task 12 — The post-mortem
+## Task 9 — The post-mortem
 
 ```bash
 cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
 ```
 
-Fill every slot after Task 13 (section 1 needs the destroy count). It asks what Terraform
+Fill every slot after Task 10 (section 1 needs the destroy count). It asks what Terraform
 managed and did not; what broke; why the service scaled the way it did and what your alert
-watches; the SQL over your own logs; what Kubernetes made you declare and why `/chat` failed in
-kind; a **costed** GKE Autopilot vs Cloud Run comparison at 1× and 1,000× load; and what breaks
-first at 1,000×. The agent may draft; you are accountable for every number.
+watches; the SQL over your own logs; and what breaks first at 1,000× the load. The agent may
+draft; you are accountable for every number.
 
 ---
 
-## Task 13 — Tear it all down, yourself *(commands given)*
+## Task 10 — Tear it all down, yourself *(commands given)*
 
-**Objective.** The stack destroyed and the cluster deleted — by **you**. This is the one thing
-in the phase the agent is forbidden from (Task 2), and the reason is the point: destruction is
-the action whose blast radius you cannot take back, so it stays with the human. Your data —
-bucket, Firestore, images — remains.
+**Objective.** The stack destroyed — by **you**. This is the one thing in the phase the agent
+is forbidden from (Task 2), and the reason is the point: destruction is the action whose blast
+radius you cannot take back, so it stays with the human. Your data — bucket, Firestore, images
+— remains.
 
 ```bash
 cd phase-6-capstone/terraform && terraform destroy && cd -
-kind delete cluster --name eurecomgpt
 python phase-6-capstone/make_report.py destroyed
 gcloud config unset auth/impersonate_service_account       # you are yourself again
 ```
@@ -403,25 +341,24 @@ gcloud config unset auth/impersonate_service_account       # you are yourself ag
 If you granted `agent-operator` anything beyond Task 1's list along the way, revoke it now, and
 say so in the log.
 
-**Taught in.** Terraform badge · GKE M4 · Lecture 1 (elasticity includes elasticity to zero)
+**Taught in.** Terraform badge · Lecture 1 (elasticity includes elasticity to zero)
 
 **Verified by.** The report records an empty state and a dead URL. The CI live tests skip once
 this is recorded.
 
 ---
 
-## Task 14 — Commit and push
+## Task 11 — Commit and push
 
-Commit `phase-6-capstone/terraform/*.tf`, `phase-6-capstone/k8s/deployment.yaml`,
-`phase-6-capstone/agent/policy.json`, `submission/phase6_report.json`,
-`submission/phase6_loadtest.json`, `submission/phase6_review.md`,
-`submission/phase6_supervision.md` and `submission/phase6_postmortem.md`, then push. **Push once
-before Task 13 too** — that is the run in which the live tests see your service.
+Commit `phase-6-capstone/terraform/*.tf`, `phase-6-capstone/agent/policy.json`,
+`submission/phase6_report.json`, `submission/phase6_loadtest.json`,
+`submission/phase6_review.md`, `submission/phase6_supervision.md` and
+`submission/phase6_postmortem.md`, then push. **Push once before Task 10 too** — that is the
+run in which the live tests see your service.
 
 ## Deliverables
 
-1. Completed `terraform/*.tf` and `k8s/deployment.yaml` (by the agent, reviewed by you) and
-   `agent/policy.json` (by you).
+1. Completed `terraform/*.tf` (by the agent, reviewed by you) and `agent/policy.json` (by you).
 2. `submission/phase6_report.json` with all four stages, plus `submission/phase6_loadtest.json`.
 3. `submission/phase6_review.md` — the three faults in PR #12.
 4. `submission/phase6_supervision.md` — the log.
@@ -439,7 +376,7 @@ each `make_report.py` stage and once the three writeups are filled):
 python -m pytest phase-6-capstone/tests -p autograder.points -q
 ```
 
-While the agent is editing Terraform and manifests, `phase-6-capstone/tests/test_units.py`
+While the agent is editing Terraform, `phase-6-capstone/tests/test_units.py`
 alone is enough — it needs no cloud resources. The instructor also runs checks that are not in
 your repo, so a green public run is necessary but not sufficient.
 

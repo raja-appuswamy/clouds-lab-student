@@ -1,7 +1,7 @@
 # Student-side autograding CI for Phase 6.
 #
-# The offline tests parse terraform/*.tf, k8s/deployment.yaml and agent/policy.json
-# (python-hcl2 + PyYAML — no terraform or kubectl binary, no GCP credentials). The live tests curl the Terraform-managed
+# The offline tests parse terraform/*.tf and agent/policy.json
+# (python-hcl2 — no terraform binary, no GCP credentials). The live tests curl the Terraform-managed
 # service while it exists and skip once your report records the destroy. The report tests read
 # submission/phase6_report.json, built stage by stage by make_report.py.
 name: autograde-phase-6
@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r phase-6-capstone/requirements.txt
 
-      - name: Run autograder tests (Terraform + k8s static checks, live service, report)
+      - name: Run autograder tests (Terraform static checks, live service, report)
         run: >
           python -m pytest phase-6-capstone/tests
           -p autograder.points
