@@ -61,14 +61,6 @@ with Cloud Run's default concurrency of 80? Where does the p99 latency come from
 TODO
 <!--/answer-->
 
-**Your alert.** What does the alerting policy watch, why that metric and threshold, and did it
-fire during the load test? If it did not, what would have to happen for it to fire — and is
-that the right trigger for an on-call engineer? (~60 words)
-
-<!--answer:alert_design-->
-TODO
-<!--/answer-->
-
 **The log sink.** Paste one SQL query you ran against the request-log table in BigQuery and one
 line of its result (e.g. requests per status code, or p99 by endpoint). (verbatim)
 

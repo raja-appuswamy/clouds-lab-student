@@ -98,5 +98,8 @@ def test_agent_policy_boundary(policy):
     for cmd in ("terraform apply", "gcloud run services update chat"):
         assert _matches(confirm, cmd) or _matches(forbidden, cmd), f"{cmd!r} changes cloud state: it needs approval"
         assert not _matches(auto, cmd), f"{cmd!r} is auto-allowed; state changes need your approval"
+    for cmd in ("gcloud projects add-iam-policy-binding", "gcloud iam roles create"):
+        assert not _matches(auto, cmd), (
+            f"{cmd!r} is auto-allowed; an agent that can change IAM unattended can widen its own access")
     for cmd in ("terraform plan", "gcloud run services list"):
         assert _matches(auto, cmd), f"{cmd!r} is read-only and should be auto-allowed, or the agent cannot work"

@@ -28,8 +28,9 @@ deliberately withheld — and why that one. (~50 words)
 TODO
 <!--/answer-->
 
-**Your boundary, in one paragraph.** Why those commands are auto-allowed, why those need
-approval, and why those are forbidden outright rather than merely prompted. (~60 words)
+**Your boundary, in one paragraph.** Which faults you found in the agent's draft policy and
+why each one mattered; then one line you changed beyond those four, and one you deliberately
+left as the agent proposed it. (~60 words)
 
 <!--answer:boundary_rationale-->
 TODO

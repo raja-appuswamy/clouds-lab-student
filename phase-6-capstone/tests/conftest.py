@@ -50,7 +50,15 @@ def tf() -> dict:
 def policy() -> dict:
     """agent/policy.json — your approval boundary for the agent (Task 2)."""
     path = PHASE_DIR / "agent" / "policy.json"
-    return json.loads(path.read_text(encoding="utf-8"))
+    if not path.exists():
+        pytest.fail(
+            "phase-6-capstone/agent/policy.json not found — copy agent/policy.draft.json "
+            "there and repair its four faults (Task 2)."
+        )
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"agent/policy.json is not valid JSON: {exc}")
 
 
 MARKER = re.compile(r"<!--answer:([A-Za-z0-9_]+)-->(.*?)<!--/answer-->", re.DOTALL)

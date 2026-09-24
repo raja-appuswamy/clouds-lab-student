@@ -19,9 +19,9 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Terraform (Phase 7): state and provider binaries stay local; tfvars holds your project id/email
+# Terraform (Phase 6): state and provider binaries stay local; tfvars holds your project id/email
 .terraform/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
-phase-7-capstone/terraform/terraform.tfvars
+phase-6-capstone/terraform/terraform.tfvars

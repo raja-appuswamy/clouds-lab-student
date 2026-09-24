@@ -95,24 +95,50 @@ lists exactly those roles. Terraform picks up the same identity through `imperso
 
 ## Task 2 — Set the approval boundary
 
-**Objective.** [agent/policy.json](agent/policy.json) says what the agent may run **without
-asking**, what needs your **approval**, and what is **forbidden** outright. Read it, decide
-whether you agree, edit it if not — then translate it into your agent's own settings
-([agent/gemini-settings.json](agent/gemini-settings.json) and
-[agent/claude-settings.json](agent/claude-settings.json) are starting points; the schema
-varies by tool version, so check your tool's docs). Give the agent its brief:
-[agent/GEMINI.md](agent/GEMINI.md) points it at `SPEC.md` and states the rules.
+**Objective.** A repaired `agent/policy.json` — three lists saying what the agent may run
+**without asking**, what needs your **approval**, and what is **forbidden** outright.
 
-The autograder reads `policy.json`: destroy and delete must be forbidden, `apply` must need
-approval, `plan` must be automatic. Beyond that the boundary is yours to argue for in the
-supervision log.
+You do not write it from scratch. [agent/policy.draft.json](agent/policy.draft.json) is what
+the agent proposed when asked to propose its own boundary, and like most such proposals it is
+tilted towards its own convenience. **It contains four faults.** Copy it and fix them:
+
+```bash
+cp phase-6-capstone/agent/policy.draft.json phase-6-capstone/agent/policy.json
+```
+
+Three criteria decide where a command belongs, and they are the whole lesson:
+
+| List | Criterion | Why |
+|---|---|---|
+| `auto` | reads state, changes nothing | interrupting you for a `plan` wastes both of you |
+| `confirm` | changes cloud state, reversibly | you should know before your project changes |
+| `forbidden` | you cannot take it back, or it widens the agent's own power | an approval prompt is not a safeguard when the answer is always yes at 2 a.m. |
+
+Read the draft's `_agent_note` before you edit: it argues for itself, and one of its arguments
+is wrong in a way worth naming in the supervision log. Two of the four faults are obvious once
+you apply the criteria; two are the kind a tired reviewer waves through.
+
+Then translate your repaired boundary into your agent's own settings
+([agent/gemini-settings.json](agent/gemini-settings.json) and
+[agent/claude-settings.json](agent/claude-settings.json) are starting points; the schema varies
+by tool version, so check your tool's docs) — `policy.json` stays as the record of what you
+decided. Give the agent its brief: [agent/GEMINI.md](agent/GEMINI.md) points it at `SPEC.md`
+and states the rules.
+
+The autograder reads `policy.json` and fails on every unrepaired fault, so this test is your
+check:
 
 ```bash
 python -m pytest phase-6-capstone/tests/test_units.py -p autograder.points -q -k agent_policy
 ```
 
+Beyond the four faults the boundary is yours: where `curl` against your own service sits,
+whether the agent may run the test suite unattended, what else you add to `forbidden`. The
+supervision log asks you to justify one line you changed and one you left alone.
+
 **Taught in.** Lecture 2 (what a container may do is decided outside it) — the same idea,
 applied to a process that decides its own next command.
+
 
 ---
 
@@ -247,9 +273,6 @@ in twenty-five). The script records latency percentiles and error rate, then wai
 **Cloud Monitoring** for the peak `instance_count` of your service over the window. You want
 ≥ 2 — with concurrency 5 and twenty clients, Cloud Run has to scale out.
 
-**While it runs**, open the console: *Cloud Run → chat-tf → Metrics* (instance count, request
-latency) and *Monitoring → Alerting*.
-
 **Taught in.** Core Services M4 *Resource Monitoring* · Lecture 1 (elasticity) · Lecture 2
 
 **Verified by.** The report: ≥ 500 requests, error rate ≤ 5 %, p50 ≤ p95 ≤ p99, peak instances
@@ -319,8 +342,8 @@ cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
 ```
 
 Fill every slot after Task 10 (section 1 needs the destroy count). It asks what Terraform
-managed and did not; what broke; why the service scaled the way it did and what your alert
-watches; the SQL over your own logs; and what breaks first at 1,000× the load. The agent may
+managed and did not; what broke; why the service scaled the way it did; the SQL over your own
+logs; and what breaks first at 1,000× the load. The agent may
 draft; you are accountable for every number.
 
 ---
