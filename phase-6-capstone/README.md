@@ -52,8 +52,8 @@ like now, and it is only teachable to someone who already has Phases 1–5 in th
    complete, valid Terraform for the same stack with **three planted faults** — one costs money,
    one over-grants, one fails silently. You find them before they reach a project.
 4. **A supervision log** ([supervision_template.md](supervision_template.md)): every approval
-   the agent asked for and what you decided, the 403 moment, what it got wrong, what you did by
-   hand, and where you would now draw the line.
+   the agent asked for and what you decided, the 403 moment, one claim of its own you verified
+   independently, what you did by hand, and where you would now draw the line.
 5. **A post-mortem** ([postmortem_template.md](postmortem_template.md)): what Terraform managed
    and what it deliberately did not, what broke, why the service scaled the way it did, and what
    breaks first at 1,000× the load.
@@ -122,6 +122,10 @@ terraform destroy ──► by you, never the agent
 - **`terraform destroy` is a graded step.** Nothing here costs money while idle, but the point
   of the phase is that infrastructure is disposable. Your data — bucket, Firestore, images —
   is untouched by design.
+
+Three of the deliverables are writeups, and the task sheet has you **copy the templates before
+Task 1 and fill them as you go** — the approvals you granted and your reasons for granting them
+cannot be reconstructed at the end of the phase from an agent transcript.
 
 The tasks, what each one must achieve and how it is checked are in **[TASKS.md](TASKS.md)**.
 In this phase the commands *are* given wherever the step is yours rather than the agent's —

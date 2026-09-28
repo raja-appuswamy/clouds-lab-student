@@ -50,7 +50,9 @@ two questions that recover it are *"what would happen if that value were wrong?"
 did you consider and reject here?"*. Both make good approval-row entries in
 `phase6_supervision.md`.
 
-**When its explanation is wrong.** That is the most valuable thing that can happen in this
-phase. Catch one — a confident, plausible, incorrect explanation — and write it up as the
-"one thing the agent got wrong" slot in the supervision log. You have the five phases behind
-you to catch it with.
+**Check its explanations, whether or not they are wrong.** A capable agent may get all of
+this right the first time; that is not a reason to take its word for anything. The supervision
+log asks you to name one claim it made and how you verified it yourself — the diff, the plan,
+the console, a test you ran. And if you do catch a confident, plausible, incorrect explanation,
+that is the most valuable thing that can happen in this phase: quote it. You have the five
+phases behind you to catch it with.

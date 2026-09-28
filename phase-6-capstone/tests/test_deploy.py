@@ -2,7 +2,7 @@
 
 Reads ``chat_url`` (Terraform's output, recorded by ``make_report.py terraform``) and curls it.
 These run in your CI **between** `terraform apply` and `terraform destroy` — once you have
-destroyed the stack (Task 11) they will fail, by design: the last push before destroy is the
+destroyed the stack (Task 10) they will fail, by design: the last push before destroy is the
 one that should be green here, and the report tests cover the destroy. (10 points.)
 """
 
@@ -32,7 +32,7 @@ def _get_json(url: str):
 
 def _skip_if_destroyed(report):
     if report.get("destroyed", {}).get("resources_remaining") == 0:
-        pytest.skip("stack already destroyed (Task 11) — live checks no longer apply")
+        pytest.skip("stack already destroyed (Task 10) — live checks no longer apply")
 
 
 @points(3)

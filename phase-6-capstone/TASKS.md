@@ -47,6 +47,42 @@ e-mail, and `impersonate = "<AGENT_SA>"`. It is git-ignored.
 
 ---
 
+## What you hand in — open these files *before* Task 1
+
+Three of this phase's deliverables are writeups, and two of them record things that **cannot be
+reconstructed afterwards**: which approvals you granted, what you were thinking when you granted
+them, and what the agent said before it corrected itself. A transcript will not save you — agents
+are verbose and your own reasoning was never in it. So copy the templates now and write as you
+go:
+
+```bash
+mkdir -p submission
+cp phase-6-capstone/supervision_template.md submission/phase6_supervision.md
+cp phase-6-capstone/postmortem_template.md  submission/phase6_postmortem.md
+cp phase-6-capstone/review_template.md      submission/phase6_review.md
+```
+
+Each task below ends with a **Record now** line naming exactly what to add. This is the map:
+
+| Task | Goes into | Which answers |
+|---|---|---|
+| 1 | supervision | `agent_tool`, `agent_identity` |
+| 2 | supervision | `boundary_rationale` |
+| 3 | supervision | `approvals` rows, `claim_checked` |
+| 4 | supervision + post-mortem | `approvals`, `refusal`, `iam_403`, `by_hand` · `what_broke` |
+| 5 | post-mortem | the load-test numbers, `elasticity_explanation` |
+| 6 | post-mortem | `log_sink_query` |
+| 7 | review | all ten slots |
+| 8 | supervision | `trust_boundary`, and anything still `TODO` |
+| 9 | post-mortem | `iac_scope`, `scale_1000x` |
+| 10 | post-mortem | `tf_remaining` (the destroy count) |
+
+The approvals table is the one to be disciplined about: **write the row when you approve, not
+at the end of the day.** Four rows minimum, one of them a refusal, and "I approved everything"
+is both a bad log and a bad grade.
+
+---
+
 ## Task 1 — Give the agent an identity *(commands given)*
 
 An agent that runs as *you* runs as Owner. Instead it gets its own service account with only
@@ -86,6 +122,10 @@ gcloud auth print-identity-token >/dev/null && echo "impersonating $AGENT_SA"
 
 **Taught in.** Core Services M1 *Identity and Access Management* — service accounts,
 impersonation, least privilege. Phase 3 Task 3 and Phase 4 Task 5 were the rehearsals.
+
+**Record now.** In `phase6_supervision.md`: `agent_tool` (which agent, which version, how you
+ran it) and `agent_identity` (the service account, the roles you gave it, and the one you
+deliberately withheld).
 
 **Verified by.** `gcloud projects get-iam-policy $PROJECT --flatten=bindings --filter="bindings.members:agent-operator"`
 lists exactly those roles. Terraform picks up the same identity through `impersonate` in
@@ -136,6 +176,9 @@ Beyond the four faults the boundary is yours: where `curl` against your own serv
 whether the agent may run the test suite unattended, what else you add to `forbidden`. The
 supervision log asks you to justify one line you changed and one you left alone.
 
+**Record now.** In `phase6_supervision.md`: `boundary_rationale` — the faults you found in the
+draft and why each mattered, plus one line you changed beyond them and one you left alone.
+
 **Taught in.** Lecture 2 (what a container may do is decided outside it) — the same idea,
 applied to a process that decides its own next command.
 
@@ -161,7 +204,8 @@ reviewing it is what this phase grades.
 Then **watch**. Every command it proposes, every explanation it gives, every error it reads,
 every fix it tries — this is the loop you will describe in the supervision log. Read the
 explanations as you would a colleague's: a confident wrong one is the most useful thing that
-can happen here, and it fills the log's "one thing the agent got wrong" slot.
+can happen here, and the log has a slot for it — but the slot asks, more generally, for one
+claim of the agent's that you checked yourself and what the check showed.
 
 Run the offline tests **throughout**, not at the end. They parse the files on disk, need no
 cloud resources and change nothing, so they are safe to run at any moment — and they fail from
@@ -184,6 +228,10 @@ The loop looks like this:
 
 You are done with this task when every check in `test_units.py` passes and `terraform plan`
 shows resources to add, none to change and none to destroy.
+
+**Record now.** In `phase6_supervision.md`: a row in the `approvals` table for anything you
+approved during this task, and `claim_checked` — one claim the agent made, how you verified it
+yourself, what you found. Write it while the diff is still on your screen.
 
 **Taught in.** Terraform badge · Elastic M3 — you can read a plan; now you read one you did not
 write.
@@ -252,6 +300,11 @@ curl -s $(terraform output -raw chat_url)/health    # expect "store": "firestore
 python phase-6-capstone/make_report.py terraform
 ```
 
+**Record now.** In `phase6_supervision.md`: the `approvals` row for the apply, `iam_403` (what
+you saw, what you decided, how long the agent held the role), `by_hand` if you did any of it
+yourself, and — if you refused something the agent asked for — `refusal`. In
+`phase6_postmortem.md`: `what_broke`, while the error text is still in your scrollback.
+
 **Taught in.** Core Services M1 — the difference between *can* and *should*.
 
 **Verified by.** `chat_url` answers `/health` with `"store": "firestore"` and `/chat` returns a
@@ -273,6 +326,9 @@ in twenty-five). The script records latency percentiles and error rate, then wai
 **Cloud Monitoring** for the peak `instance_count` of your service over the window. You want
 ≥ 2 — with concurrency 5 and twenty clients, Cloud Run has to scale out.
 
+**Record now.** In `phase6_postmortem.md`: the section-1 numbers, copied from
+`submission/phase6_loadtest.json` rather than retyped, and `elasticity_explanation`.
+
 **Taught in.** Core Services M4 *Resource Monitoring* · Lecture 1 (elasticity) · Lecture 2
 
 **Verified by.** The report: ≥ 500 requests, error rate ≤ 5 %, p50 ≤ p95 ≤ p99, peak instances
@@ -282,15 +338,64 @@ in twenty-five). The script records latency percentiles and error rate, then wai
 
 ## Task 6 — Query your own request logs
 
-**Objective.** The log sink delivered: a `run_googleapis_com_requests` table exists in the
-`eurecomgpt_logs` dataset (Terraform output `logs_dataset`), and you have run at least one SQL
-query over it — requests per status code, or p99 latency by URL path — and kept the query and
-one result line for the post-mortem. Ask the agent for the query if you like; you still have to
-read the answer.
+**Objective.** One SQL query of your own, run against the request logs your stack exported to
+BigQuery, with the query and one line of its result kept for the post-mortem.
 
-**Taught in.** Core Services M2 · Phase 3 Task 11 (BigQuery)
+**Where those logs came from.** The log sink Terraform created
+(`google_logging_project_sink.requests_to_bq`) copies every Cloud Run *request* log line for
+your service into the `eurecomgpt_logs` dataset. Your load test in Task 5 generated a few
+thousand of them. Nothing else sends them there and no one queries them for you — this task is
+where you look at your own service's traffic as data.
 
-**Verified by.** The post-mortem slot `log_sink_query`. Sink delivery lags a few minutes.
+1. **Find the table.** Delivery lags a few minutes after the load test, so if the dataset looks
+   empty, wait and list again.
+
+   ```bash
+   bq ls $PROJECT:eurecomgpt_logs
+   ```
+
+   You are looking for `run_googleapis_com_requests`. Note the **colon** between project and
+   dataset: that is `bq`'s syntax. The Terraform output `logs_dataset` uses a dot
+   (`project.dataset`) because that is the form SQL wants inside backticks — pass it to `bq ls`
+   and you get `Namespace project.project.dataset ... denied (or it may not exist)`, which is a
+   confusing way of saying "no such dataset".
+
+2. **Read its schema before you write SQL.** It is log JSON flattened into columns, not a table
+   you designed, and the useful fields are nested under `httpRequest`:
+
+   ```bash
+   bq show --schema --format=prettyjson $PROJECT:eurecomgpt_logs.run_googleapis_com_requests
+   ```
+
+   Note the types: `httpRequest.status` is an integer, but `httpRequest.latency` arrives as a
+   string like `0.153s`, so aggregating it means stripping the suffix first.
+
+3. **Run the worked example, then write one of your own.** This is the first SQL you write
+   yourself in the lab — Phase 3's query came ready-made in the notebook and Phase 4's lives in
+   `retrieval.py` — so here is the shape, counting requests by status code:
+
+   ```bash
+   bq query --use_legacy_sql=false "
+     SELECT httpRequest.status AS status, COUNT(*) AS n
+     FROM \`$PROJECT.eurecomgpt_logs.run_googleapis_com_requests\`
+     GROUP BY status ORDER BY n DESC"
+   ```
+
+   Now write a **different** one that your load test can answer and that aggregates something
+   other than a plain count: latency by URL path, requests per minute across the window, or the
+   p99 (`APPROX_QUANTILES(x, 100)[OFFSET(99)]`). Latency is that `0.153s` string, so it needs
+   converting before you can average it — `CAST(REPLACE(httpRequest.latency, 's', '') AS FLOAT64)`
+   is one way. You may ask the agent for the SQL, but you have to read the result and be able to
+   say what it means.
+
+4. **Record now.** Paste your own query and one result row straight into
+   `phase6_postmortem.md`'s `log_sink_query` slot — not into a scratch file you will lose.
+
+**Taught in.** Core Services M2 *Storage and Database Services* · Phase 3 Task 11 and Phase 4's
+`retrieval.py` showed you BigQuery queries; this is the first one you write.
+
+**Verified by.** The post-mortem slot `log_sink_query` — your own query, verbatim, and a result
+line.
 
 ---
 
@@ -300,11 +405,8 @@ Now the other side of the job. [review/main.tf](review/main.tf) is a complete Te
 same stack, written by an agent from the same `SPEC.md`. It validates, it would apply, and it
 contains **three faults** a careless reviewer would approve: one that **costs money**, one that
 **grants more than it should**, one that **fails silently**. Read it against the spec line by
-line — do not apply it — and fill in the review:
-
-```bash
-cp phase-6-capstone/review_template.md submission/phase6_review.md
-```
+line — do not apply it — and fill in `submission/phase6_review.md` (you copied it before
+Task 1).
 
 For each fault: where, what is wrong and what it would have cost or exposed, and the corrected
 HCL. Then a verdict: would you approve after the fixes, and which fault would have been hardest
@@ -318,33 +420,28 @@ you found the right three.
 
 ---
 
-## Task 8 — The supervision log
+## Task 8 — Finish the supervision log
 
-```bash
-cp phase-6-capstone/supervision_template.md submission/phase6_supervision.md
-```
+If you followed the **Record now** lines, most of `submission/phase6_supervision.md` is already
+written and this task is short: add `trust_boundary` — where, *now that you have done it*, you
+would draw the line between what an agent may do unsupervised, what needs approval, and what it
+may never do — and fill anything still marked `TODO`.
 
-You should have been filling this since Task 2. It asks for: which agent and how you ran it;
-the identity you gave it and the role you withheld; your boundary and why; **every approval it
-requested** (at least four, including at least one you refused); the 403 in Task 4 and what you
-decided; one thing the agent got wrong and how you caught it; one thing you did by hand; and
-where, now, you would draw the line between unsupervised, approved, and never.
+If you skipped them, this is the task that hurts, and no transcript will rescue the approvals
+table: it wants what you were thinking, not what the agent printed.
 
 **Verified by.** The public test checks every slot is filled and the approvals table has ≥ 4
 rows with a refusal; the instructor reads it.
 
 ---
 
-## Task 9 — The post-mortem
+## Task 9 — Finish the post-mortem
 
-```bash
-cp phase-6-capstone/postmortem_template.md submission/phase6_postmortem.md
-```
+Two slots are left that need the whole phase behind them: `iac_scope` (what Terraform managed,
+what it deliberately did not, and why that split is right) and `scale_1000x` (what breaks first
+under a thousand times the load). One more, `tf_remaining`, waits for the destroy in Task 10.
 
-Fill every slot after Task 10 (section 1 needs the destroy count). It asks what Terraform
-managed and did not; what broke; why the service scaled the way it did; the SQL over your own
-logs; and what breaks first at 1,000× the load. The agent may
-draft; you are accountable for every number.
+The agent may draft any of this; you are accountable for every number and every claim.
 
 ---
 
@@ -364,7 +461,66 @@ gcloud config unset auth/impersonate_service_account       # you are yourself ag
 If you granted `agent-operator` anything beyond Task 1's list along the way, revoke it now, and
 say so in the log.
 
+### If `terraform destroy` will not run
+
+Two failures are common, and neither means your stack is broken.
+
+**`dial tcp [2a00:...]:443: connect: cannot assign requested address`.** Cloud Shell handed the
+VM an IPv6 address it cannot actually dial from, and Terraform — a Go binary with its own
+resolver — prefers the AAAA record. Nothing was destroyed; this fails during refresh. Editing
+`/etc/gai.conf` does *not* help (Go ignores it). Remove the IPv6 stack instead, then retry:
+
+```bash
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```
+
+**A `403` on the project IAM bindings.** The provider still impersonates `agent-operator`
+(`impersonate` in `terraform.tfvars`), and if you revoked `projectIamAdmin` in Task 4 it can no
+longer remove those bindings. Comment the `impersonate` line out so Terraform acts as *you* —
+which is what this task intends anyway — and destroy again.
+
+### Fallback: tear down by hand, then reconcile state
+
+If neither fixes it, delete the resources yourself and bring the state in line. The graded
+report is identical, and doing it this way shows you exactly how much a one-line `destroy` was
+doing for you:
+
+```bash
+# 1. what Terraform manages, so you delete all of it and nothing else
+cd phase-6-capstone/terraform && terraform state list
+
+# 2. delete (gcloud resolves IPv4 happily, so this works when Terraform does not)
+gcloud run services delete chat-tf --region=$REGION --quiet
+gcloud logging sinks delete chat-tf-requests-to-bq --quiet
+gcloud logging metrics delete chat-tf_errors --quiet
+gcloud alpha monitoring policies list --format='value(name)' --filter='displayName~chat-tf'   # delete each
+gcloud alpha monitoring channels list --format='value(name)' --filter='displayName~EurecomGPT'
+bq rm -r -f --dataset $PROJECT:eurecomgpt_tf
+bq rm -r -f --dataset $PROJECT:eurecomgpt_logs
+gcloud iam service-accounts delete chat-tf-runner@$PROJECT.iam.gserviceaccount.com --quiet
+gcloud iam roles delete chattfBigQueryReader --project=$PROJECT --quiet
+
+# 3. make Terraform forget what no longer exists (local only — no API calls)
+terraform state list | xargs -d '\n' terraform state rm
+python ../make_report.py destroyed
+```
+
+**Order matters:** `state rm` deletes nothing in GCP. Run it before step 2 and you have thrown
+away the only list of what is still running. And `xargs -d '\n'` is not optional — plain
+`xargs` strips the quotes out of `for_each` addresses like
+`google_project_iam_member.chat_roles["roles/bigquery.jobUser"]` and Terraform rejects them.
+
+Leave the enabled APIs alone either way: the config sets `disable_on_destroy = false` because
+Phases 1–5 still use them, so even a clean destroy only forgets them.
+
+If you used the fallback, say so in `what_broke` — "the tool failed, the platform was fine" is a
+real operational distinction, and the diagnosis is the interesting part.
+
 **Taught in.** Terraform badge · Lecture 1 (elasticity includes elasticity to zero)
+
+**Record now.** In `phase6_postmortem.md`: `tf_remaining`, from the report you just wrote. That
+is the last slot.
 
 **Verified by.** The report records an empty state and a dead URL. The CI live tests skip once
 this is recorded.

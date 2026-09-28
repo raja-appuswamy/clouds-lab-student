@@ -72,10 +72,14 @@ TODO
 
 ## 3. Judgement
 
-**Something the agent got wrong** — a hallucinated attribute, a wrong diagnosis, a fix that
-made things worse — and how you caught it. Quote the relevant line. (~60 words)
+**A claim you checked.** The agent tells you what it did — resources created, tests passed,
+why a value is what it is. Pick one such claim, say how you verified it *independently* (the
+diff, the plan, the console, a test you ran yourself), and what you found. If it turned out
+wrong — a hallucinated attribute, a wrong diagnosis, a fix that made things worse, a summary
+claiming work that was already in the scaffolding — quote the line and say how you caught it.
+If it held up, say what would have had to be different for it not to. (~60 words)
 
-<!--answer:agent_mistake-->
+<!--answer:claim_checked-->
 TODO
 <!--/answer-->
 

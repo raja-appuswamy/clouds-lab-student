@@ -61,8 +61,8 @@ with Cloud Run's default concurrency of 80? Where does the p99 latency come from
 TODO
 <!--/answer-->
 
-**The log sink.** Paste one SQL query you ran against the request-log table in BigQuery and one
-line of its result (e.g. requests per status code, or p99 by endpoint). (verbatim)
+**The log sink.** Paste the query you wrote yourself against the request-log table in BigQuery
+— not the worked example from Task 6 — and one line of its result. (verbatim)
 
 <!--answer:log_sink_query-->
 TODO
