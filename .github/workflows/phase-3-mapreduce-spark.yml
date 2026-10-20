@@ -12,6 +12,15 @@ name: autograde-phase-3
 on:
   push:
     branches: ["**"]
+    # Only this phase's own files. Without this, pushing a later phase re-runs this workflow —
+    # and once you have torn this phase's resources down, its live checks fail and a green run
+    # becomes red. Edit this phase or its report and it runs again, as it should.
+    paths:
+      - "phase-3-mapreduce-spark/**"
+      - "submission/phase3_*"
+      - "autograder/**"
+      - "requirements.txt"
+      - ".github/workflows/phase-3-mapreduce-spark.yml"
   workflow_dispatch: {}
 
 # Cancel a superseded run when you push again — the latest push is what gets graded.

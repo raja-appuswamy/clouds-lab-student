@@ -148,6 +148,13 @@ phases, live checks against *your own* deployed endpoints and public artifacts. 
 adds hidden tests and reads the writeups. A green CI badge is necessary, not sufficient.
 Details per phase are in each `TASKS.md` under *How your work is checked*.
 
+**Each phase's workflow only runs when that phase's files change** — its own directory, its
+`submission/phaseN_*` files, or the shared test harness. Pushing Phase 3 does not re-run
+Phase 2's checks, so a phase you have finished and torn down keeps its green badge. The
+corollary: if you *do* edit a finished phase after deleting its cloud resources, that phase's
+live checks will fail on the next push. Finish a phase, confirm green, then tear down — the
+order the task sheets give.
+
 ## Billing and budget
 
 The lab is designed to cost **€0**. Phase 0 has you set a budget alert at €0.01; if it ever
